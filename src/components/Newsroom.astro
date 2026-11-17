@@ -4,7 +4,6 @@ const newsItems = await getCollection('news');
 ---
 
 <section class="newsroom-section py-[120px] px-[8%] bg-[var(--dark-navy)] relative overflow-hidden" id="newsroom">
-    <!-- Background image with overlay styling -->
     <div 
         class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-5 mix-blend-luminosity pointer-events-none"
         style="background-image: url('/images/background.jpg');"
@@ -21,8 +20,7 @@ const newsItems = await getCollection('news');
             </h2>
         </div>
 
-        <!-- Momentum slider wrapper providing native smooth scrolling -->
-        <div class="overflow-x-auto no-scrollbar momentum-slider cursor-grab relative pb-[10px]" id="newsSliderWrapper">
+        <div class="overflow-hidden relative pb-[10px] touch-pan-y" id="newsSliderWrapper">
             <div class="flex gap-[35px] w-max cursor-grab active:cursor-grabbing" id="newsTrack">
                 {newsItems.map((item) => (
                     <div class="news-card w-[350px] md:w-[380px] h-[480px] shrink-0 rounded-[16px] overflow-hidden shadow-xl flex flex-col relative group border border-white/10 select-none">
@@ -44,7 +42,6 @@ const newsItems = await getCollection('news');
             </div>
         </div>
 
-        <!-- Slider navigation and progress bar controls -->
         <div class="flex justify-end items-center gap-[20px] mt-[50px]">
             <button type="button" id="newsPrevBtn" class="text-xs font-bold tracking-[2px] text-white hover:text-[var(--accent-orange)] transition-colors cursor-pointer uppercase select-none">PREV.</button>
             <div class="w-[120px] h-[2px] bg-white/10 relative overflow-hidden">
@@ -56,78 +53,251 @@ const newsItems = await getCollection('news');
 </section>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const wrapper = document.getElementById('newsSliderWrapper') as HTMLElement;
-        const prevBtn = document.getElementById('newsPrevBtn') as HTMLButtonElement;
-        const nextBtn = document.getElementById('newsNextBtn') as HTMLButtonElement;
-        const progressBar = document.getElementById('newsProgressBar') as HTMLElement;
+    const wrapper = document.getElementById('newsSliderWrapper') as HTMLElement;
+    const track = document.getElementById('newsTrack') as HTMLElement;
+    const prevBtn = document.getElementById('newsPrevBtn') as HTMLButtonElement;
+    const nextBtn = document.getElementById('newsNextBtn') as HTMLButtonElement;
+    const progressBar = document.getElementById('newsProgressBar') as HTMLElement;
 
-        if (!wrapper || !prevBtn || !nextBtn || !progressBar) return;
+    if (wrapper && track && prevBtn && nextBtn && progressBar) {
+        const cards = Array.from(track.querySelectorAll<HTMLElement>('.news-card'));
 
-        const cards = wrapper.querySelectorAll('.news-card');
+        const GAP = 35;
+        const ANIMATION_DURATION = 380;
+        const MIN_SWIPE_DISTANCE = 25;
+        const VELOCITY_THRESHOLD = 0.15;
 
-        // Update progress bar width smoothly based on native scroll position
-        function updateProgress() {
-            const scrollLeft = wrapper.scrollLeft;
-            const maxScrollLeft = wrapper.scrollWidth - wrapper.clientWidth;
-            const progress = maxScrollLeft > 0 ? (scrollLeft / maxScrollLeft) * 100 : 0;
-            progressBar.style.width = `${Math.max(25, progress)}%`;
-        }
-
-        // Handle Next button click with smooth native behavior
-        nextBtn.addEventListener('click', () => {
-            const cardWidth = (cards[0] as HTMLElement).offsetWidth + 35;
-            wrapper.scrollBy({ left: cardWidth, behavior: 'smooth' });
-        });
-
-        // Handle Prev button click with smooth native behavior
-        prevBtn.addEventListener('click', () => {
-            const cardWidth = (cards[0] as HTMLElement).offsetWidth + 35;
-            wrapper.scrollBy({ left: -cardWidth, behavior: 'smooth' });
-        });
-
-        wrapper.addEventListener('scroll', updateProgress);
-
-        // Prevent dragging gestures from triggering unintended clicks
+        let currentIndex = 0;
         let startX = 0;
         let startY = 0;
-        let isMoving = false;
+        let startTime = 0;
+        let startOffset = 0;
+        let currentOffset = 0;
+        let isDragging = false;
+        let isHorizontalGesture = false;
+        let activePointerId: number | null = null;
+        let suppressClick = false;
+        let snapPoints: number[] = [];
 
-        cards.forEach((card) => {
-            card.addEventListener('pointerdown', (e: any) => {
-                startX = e.clientX;
-                startY = e.clientY;
-                isMoving = false;
+        function getCardStep() {
+            if (!cards.length) return 0;
+            return cards[0].offsetWidth + GAP;
+        }
+
+        function getMaxOffset() {
+            return Math.max(0, track.scrollWidth - wrapper.clientWidth);
+        }
+
+        function buildSnapPoints() {
+            const maxOffset = getMaxOffset();
+
+            snapPoints = cards.map((card) => {
+                return Math.min(card.offsetLeft, maxOffset);
             });
 
-            card.addEventListener('pointermove', (e: any) => {
-                if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
-                    isMoving = true;
+            snapPoints = snapPoints.filter((point, index) => {
+                return index === 0 || point > snapPoints[index - 1] + 1;
+            });
+
+            if (!snapPoints.length) snapPoints = [0];
+
+            currentIndex = Math.min(currentIndex, snapPoints.length - 1);
+            currentOffset = snapPoints[currentIndex];
+        }
+
+        function updateProgress() {
+            const total = snapPoints.length;
+            const progress = total > 1
+                ? ((currentIndex + 1) / total) * 100
+                : 100;
+
+            progressBar.style.width = `${progress}%`;
+
+            prevBtn.style.opacity = currentIndex === 0 ? '0.4' : '1';
+            nextBtn.style.opacity = currentIndex >= total - 1 ? '0.4' : '1';
+        }
+
+        function moveToIndex(index: number, smooth = true) {
+            currentIndex = Math.max(0, Math.min(index, snapPoints.length - 1));
+            currentOffset = snapPoints[currentIndex];
+
+            track.style.transition = smooth
+                ? `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 0.75, 0.25, 1)`
+                : 'none';
+
+            track.style.transform = `translate3d(${-currentOffset}px, 0, 0)`;
+
+            updateProgress();
+        }
+
+        function finishDragging() {
+            if (!isDragging) return;
+
+            isDragging = false;
+            activePointerId = null;
+            wrapper.classList.remove('is-dragging');
+
+            const dragDistance = currentOffset - startOffset;
+            const dragDuration = Math.max(1, performance.now() - startTime);
+            const velocity = Math.abs(dragDistance) / dragDuration;
+
+            if (isHorizontalGesture) {
+                if (
+                    Math.abs(dragDistance) >= MIN_SWIPE_DISTANCE ||
+                    velocity >= VELOCITY_THRESHOLD
+                ) {
+                    const direction = dragDistance > 0 ? 1 : -1;
+                    moveToIndex(currentIndex + direction);
+                } else {
+                    moveToIndex(currentIndex);
                 }
-            });
 
-            card.addEventListener('click', (e) => {
-                if (isMoving) {
-                    e.preventDefault();
+                suppressClick = true;
+
+                window.setTimeout(() => {
+                    suppressClick = false;
+                }, 150);
+            } else {
+                moveToIndex(currentIndex);
+            }
+
+            isHorizontalGesture = false;
+        }
+
+        wrapper.addEventListener('pointerdown', (event: PointerEvent) => {
+            if (event.pointerType === 'mouse' && event.button !== 0) return;
+            if (snapPoints.length <= 1) return;
+
+            isDragging = true;
+            isHorizontalGesture = false;
+            activePointerId = event.pointerId;
+
+            startX = event.clientX;
+            startY = event.clientY;
+            startTime = performance.now();
+            startOffset = currentOffset;
+
+            track.style.transition = 'none';
+            wrapper.classList.add('is-dragging');
+        });
+
+        wrapper.addEventListener('pointermove', (event: PointerEvent) => {
+            if (!isDragging || event.pointerId !== activePointerId) return;
+
+            const deltaX = event.clientX - startX;
+            const deltaY = event.clientY - startY;
+
+            if (!isHorizontalGesture) {
+                if (Math.abs(deltaX) < 6 && Math.abs(deltaY) < 6) return;
+
+                if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                    isDragging = false;
+                    activePointerId = null;
+                    wrapper.classList.remove('is-dragging');
                     return;
                 }
+
+                isHorizontalGesture = true;
+                wrapper.setPointerCapture(event.pointerId);
+            }
+
+            event.preventDefault();
+
+            const maxOffset = getMaxOffset();
+            let nextOffset = startOffset - deltaX;
+
+            if (nextOffset < 0) {
+                nextOffset = nextOffset * 0.25;
+            } else if (nextOffset > maxOffset) {
+                nextOffset = maxOffset + (nextOffset - maxOffset) * 0.25;
+            }
+
+            currentOffset = nextOffset;
+            track.style.transform = `translate3d(${-currentOffset}px, 0, 0)`;
+        });
+
+        wrapper.addEventListener('pointerup', (event: PointerEvent) => {
+            if (event.pointerId !== activePointerId) return;
+            finishDragging();
+        });
+
+        wrapper.addEventListener('pointercancel', () => {
+            finishDragging();
+        });
+
+        wrapper.addEventListener('lostpointercapture', () => {
+            if (isDragging) finishDragging();
+        });
+
+        cards.forEach((card) => {
+            card.addEventListener('click', (event) => {
+                if (suppressClick) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return;
+                }
+
                 card.classList.toggle('active-card');
             });
         });
-    });
+
+        nextBtn.addEventListener('click', () => {
+            if (!isDragging) moveToIndex(currentIndex + 1);
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (!isDragging) moveToIndex(currentIndex - 1);
+        });
+
+        function refreshSlider() {
+            buildSnapPoints();
+            moveToIndex(currentIndex, false);
+        }
+
+        window.addEventListener('resize', refreshSlider);
+
+        refreshSlider();
+    }
 </script>
 
 <style>
+    #newsSliderWrapper {
+        touch-action: pan-y;
+        cursor: grab;
+        overflow: hidden;
+    }
+
+    #newsSliderWrapper.is-dragging {
+        cursor: grabbing;
+        user-select: none;
+    }
+
+    #newsTrack {
+        will-change: transform;
+    }
+
+    .news-card img {
+        -webkit-user-drag: none;
+        user-select: none;
+    }
+
     @media (hover: none) {
         .news-card.active-card .news-content-box {
             height: 420px !important;
             background-color: var(--dark-navy) !important;
         }
+
         .news-card.active-card p {
             display: -webkit-box;
             -webkit-line-clamp: unset;
             -webkit-box-orient: vertical;
             overflow: visible;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        #newsTrack {
+            transition-duration: 0ms !important;
         }
     }
 </style>

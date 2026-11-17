@@ -1,21 +1,17 @@
+
 ---
 /**
  * Page: Dynamic Project Details ([slug].astro)
- * Description: Displays single project information, metadata, interactive gallery slider, and Lightbox viewer 
- * with balanced image tones and consistent background layer.
+ * Description: Displays project information, interactive gallery slider, and Lightbox viewer.
  */
 import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
-import MiniFooter from '../../components/MiniFooter.astro';
 
 export const prerender = true;
 
-/**
- * Generate static paths for all projects in the collection.
- */
 export async function getStaticPaths() {
     const projects = await getCollection('projects');
-    
+
     return projects.map(entry => ({
         params: { slug: entry.id },
         props: { entry },
@@ -28,23 +24,18 @@ const { data } = entry;
 
 <Layout title={`${data.title} | HERITAGE APEX`}>
     
-    <!-- Main Section Wrapper with Dark Background and Fixed Min-Height -->
-    <section class="momentum-slider cursor-grab relative w-full min-h-[calc(100vh-90px)] bg-[var(--darker-brown)] pt-12 pb-16 overflow-hidden">
+    <section class="relative w-full min-h-[calc(100vh-90px)] bg-[var(--darker-brown)] pt-12 pb-16 overflow-hidden">
 
-        <!-- Background Image Layer matching portfolio pages -->
         <div 
             class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-5 mix-blend-luminosity pointer-events-none z-0"
             style="background-image: url('/images/background.jpg');"
             aria-hidden="true"
         ></div>
 
-        <!-- Bottom Gradient Blend -->
         <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[var(--darker-brown)] pointer-events-none z-0"></div>
 
-        <!-- Main Content Container -->
         <main class="relative z-10 max-w-[1450px] w-full mx-auto px-[6%] md:px-[8%]">
             
-            <!-- Project Header Section -->
             <section class="mb-8 md:mb-10">
                 <div class="max-w-[900px]">
                     <span class="text-[11px] md:text-[12px] tracking-[3px] font-semibold text-[var(--accent-orange)] block mb-2">{data.category}</span>
@@ -53,20 +44,29 @@ const { data } = entry;
                 </div>
             </section>
 
-            <!-- Horizontal Gallery Showcase Section -->
             <section>
                 <div class="mb-4 md:mb-6">
                     <span class="text-[10px] md:text-[12px] tracking-[2px] font-semibold text-[var(--accent-orange)] uppercase block mb-0.5">GALLERY SHOWCASE</span>
                     <h2 class="text-[1.6rem] sm:text-[2rem] font-bold text-white">Project Views</h2>
                 </div>
 
-                <!-- Momentum slider wrapper supporting native smooth touch navigation -->
-                <div class="overflow-x-auto no-scrollbar momentum-slider rounded-[12px] py-2" id="horizontalSliderWrapper">
-                    <div id="horizontalSlider" class="flex gap-[20px] md:gap-[30px] w-max cursor-grab active:cursor-grabbing">
+                <div
+                    id="horizontalSliderWrapper"
+                    class="relative overflow-hidden rounded-[12px] py-2 w-full touch-pan-y"
+                >
+                    <div id="horizontalSlider" class="flex gap-[20px] md:gap-[30px] w-max cursor-grab">
                         {data.gallery.map((img: string, index: number) => (
-                            <div class="gallery-item min-w-[85%] sm:min-w-[55%] md:min-w-[42%] lg:min-w-[31.5%] h-[240px] sm:h-[300px] md:h-[340px] rounded-[12px] overflow-hidden shadow-xl relative cursor-pointer flex-shrink-0 group border border-white/10 select-none" data-index={index}>
-                                <!-- Added brightness-95 contrast-95 to balance colors and prevent over-saturation -->
-                                <img src={img} alt={`Gallery image ${index + 1}`} class="w-full h-full object-cover brightness-95 contrast-95 transition-transform duration-700 group-hover:scale-105 pointer-events-none" />
+                            <div
+                                class="gallery-item w-[85vw] sm:w-[450px] md:w-[500px] h-[220px] sm:h-[260px] md:h-[300px] rounded-[12px] overflow-hidden shadow-xl relative cursor-pointer shrink-0 group border border-white/10 select-none"
+                                data-index={index}
+                            >
+                                <img
+                                    src={img}
+                                    alt={`Gallery image ${index + 1}`}
+                                    draggable="false"
+                                    class="w-full h-full object-cover brightness-95 contrast-95 transition-transform duration-700 group-hover:scale-105 pointer-events-none"
+                                />
+
                                 <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
                                     <span class="bg-black/70 text-white px-4 py-1.5 rounded-full text-xs tracking-wider uppercase font-semibold backdrop-blur-sm">Click to Expand</span>
                                 </div>
@@ -75,15 +75,28 @@ const { data } = entry;
                     </div>
                 </div>
 
-                <!-- Slider Bottom Navigation Controls -->
                 <div class="flex justify-end items-center gap-[15px] md:gap-[20px] mt-6 select-none">
-                    <button id="sliderPrev" class="text-[11px] font-bold tracking-[2.5px] uppercase text-gray-400 hover:text-[var(--accent-orange)] transition-colors cursor-pointer bg-transparent border-none">
+                    <button
+                        id="sliderPrev"
+                        type="button"
+                        class="text-[11px] font-bold tracking-[2.5px] uppercase text-gray-400 hover:text-[var(--accent-orange)] transition-colors cursor-pointer bg-transparent border-none"
+                    >
                         PREV.
                     </button>
+
                     <div class="w-[80px] md:w-[100px] h-[2px] bg-white/15 relative overflow-hidden rounded-full">
-                        <div id="sliderProgress" class="h-full bg-[var(--accent-orange)] transition-all duration-300 ease-out" style="width: 35%;"></div>
+                        <div
+                            id="sliderProgress"
+                            class="h-full bg-[var(--accent-orange)] transition-all duration-300 ease-out"
+                            style="width: 0%;"
+                        ></div>
                     </div>
-                    <button id="sliderNext" class="text-[11px] font-bold tracking-[2.5px] uppercase text-white hover:text-[var(--accent-orange)] transition-colors cursor-pointer bg-transparent border-none">
+
+                    <button
+                        id="sliderNext"
+                        type="button"
+                        class="text-[11px] font-bold tracking-[2.5px] uppercase text-white hover:text-[var(--accent-orange)] transition-colors cursor-pointer bg-transparent border-none"
+                    >
                         NEXT
                     </button>
                 </div>
@@ -91,165 +104,412 @@ const { data } = entry;
         </main>
     </section>
 
-    <!-- Lightbox Modal for Image Zoom -->
     <div id="lightboxModal" class="fixed inset-0 bg-black/95 z-[9999] hidden items-center justify-center p-4">
-        <button id="lightboxClose" class="absolute top-[20px] right-[25px] md:top-[30px] md:right-[40px] text-white text-[2.5rem] bg-none border-none cursor-pointer hover:text-[var(--accent-orange)] z-50">&times;</button>
-        <button id="lightboxPrev" class="absolute left-[15px] md:left-[30px] top-1/2 -translate-y-1/2 bg-white/10 text-white text-[1.5rem] md:text-[1.8rem] px-3.5 py-3 md:px-5 md:py-4 border-none cursor-pointer rounded hover:bg-[var(--accent-orange)] z-50">&#10094;</button>
+        <button
+            id="lightboxClose"
+            type="button"
+            class="absolute top-[20px] right-[25px] md:top-[30px] md:right-[40px] text-white text-[2.5rem] bg-none border-none cursor-pointer hover:text-[var(--accent-orange)] z-50"
+        >
+            &times;
+        </button>
+
+        <button
+            id="lightboxPrev"
+            type="button"
+            class="absolute left-[15px] md:left-[30px] top-1/2 -translate-y-1/2 bg-white/10 text-white text-[1.5rem] md:text-[1.8rem] px-3.5 py-3 md:px-5 md:py-4 border-none cursor-pointer rounded hover:bg-[var(--accent-orange)] z-50"
+        >
+            &#10094;
+        </button>
         
         <div class="text-center max-w-[90vw] max-h-[85vh] flex flex-col items-center">
-            <img id="lightboxImg" src="" alt="Expanded View" class="max-w-full max-h-[70vh] object-contain rounded shadow-2xl" />
+            <img
+                id="lightboxImg"
+                src=""
+                alt="Expanded View"
+                class="max-w-full max-h-[70vh] object-contain rounded shadow-2xl"
+            />
             <p id="lightboxCaption" class="text-gray-300 mt-3 text-sm md:text-base"></p>
         </div>
 
-        <button id="lightboxNext" class="absolute right-[15px] md:right-[30px] top-1/2 -translate-y-1/2 bg-white/10 text-white text-[1.5rem] md:text-[1.8rem] px-3.5 py-3 md:px-5 md:py-4 border-none cursor-pointer rounded hover:bg-[var(--accent-orange)] z-50">&#10095;</button>
+        <button
+            id="lightboxNext"
+            type="button"
+            class="absolute right-[15px] md:right-[30px] top-1/2 -translate-y-1/2 bg-white/10 text-white text-[1.5rem] md:text-[1.8rem] px-3.5 py-3 md:px-5 md:py-4 border-none cursor-pointer rounded hover:bg-[var(--accent-orange)] z-50"
+        >
+            &#10095;
+        </button>
     </div>
 
     <script>
-        /**
-         * Interactive Gallery Slider & Lightbox Script
-         * Handles native momentum scrolling, smooth controls, and full-screen image viewing.
-         */
         document.addEventListener('DOMContentLoaded', () => {
-            const wrapper = document.getElementById('horizontalSliderWrapper') as HTMLElement;
-            const sliderPrev = document.getElementById('sliderPrev');
-            const sliderNext = document.getElementById('sliderNext');
-            const sliderProgress = document.getElementById('sliderProgress') as HTMLElement;
-            const galleryItems = document.querySelectorAll('.gallery-item');
-            
-            const modal = document.getElementById('lightboxModal');
-            const modalImg = document.getElementById('lightboxImg') as HTMLImageElement;
-            const modalCaption = document.getElementById('lightboxCaption');
-            const codeCloseBtn = document.getElementById('lightboxClose');
-            const prevBtn = document.getElementById('lightboxPrev');
-            const nextBtn = document.getElementById('lightboxNext');
+            const wrapper = document.getElementById('horizontalSliderWrapper') as HTMLElement | null;
+            const track = document.getElementById('horizontalSlider') as HTMLElement | null;
 
-            const imagesData = Array.from(galleryItems).map(item => {
+            const sliderPrev = document.getElementById('sliderPrev') as HTMLButtonElement | null;
+            const sliderNext = document.getElementById('sliderNext') as HTMLButtonElement | null;
+            const sliderProgress = document.getElementById('sliderProgress') as HTMLElement | null;
+
+            const modal = document.getElementById('lightboxModal');
+            const modalImg = document.getElementById('lightboxImg') as HTMLImageElement | null;
+            const modalCaption = document.getElementById('lightboxCaption');
+            const closeBtn = document.getElementById('lightboxClose');
+            const lightboxPrev = document.getElementById('lightboxPrev');
+            const lightboxNext = document.getElementById('lightboxNext');
+
+            if (!wrapper || !track || !sliderPrev || !sliderNext || !sliderProgress) return;
+
+            const galleryItems = Array.from(track.querySelectorAll<HTMLElement>('.gallery-item'));
+
+            const imagesData = galleryItems.map(item => {
                 const img = item.querySelector('img');
+
                 return {
                     src: img?.getAttribute('src') || '',
                     alt: img?.getAttribute('alt') || ''
                 };
             });
 
-            // Update progress bar width smoothly based on native horizontal scroll position
+            const ANIMATION_DURATION = 420;
+            const MIN_SWIPE_DISTANCE = 35;
+            const VELOCITY_THRESHOLD = 0.35;
+            const DIRECTION_THRESHOLD = 8;
+
+            let snapPoints: number[] = [];
+            let currentIndex = 0;
+            let currentOffset = 0;
+
+            let isDragging = false;
+            let isHorizontalDrag = false;
+            let activePointerId: number | null = null;
+
+            let startX = 0;
+            let startY = 0;
+            let startOffset = 0;
+            let lastX = 0;
+            let lastTime = 0;
+            let velocity = 0;
+
+            let suppressClick = false;
+            let suppressClickTimer: ReturnType<typeof setTimeout> | null = null;
+
+            let lightboxIndex = 0;
+
+            track.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+            track.style.willChange = 'transform';
+            wrapper.style.touchAction = 'pan-y';
+
+            function getMaxOffset() {
+                return Math.max(0, track.scrollWidth - wrapper.clientWidth);
+            }
+
+            function buildSnapPoints() {
+                snapPoints = galleryItems.map(item => {
+                    const itemCenter = item.offsetLeft + item.offsetWidth / 2;
+                    const targetOffset = itemCenter - wrapper.clientWidth / 2;
+
+                    return Math.max(0, Math.min(targetOffset, getMaxOffset()));
+                });
+
+                snapPoints = snapPoints.filter((point, index) =>
+                    index === 0 || point > snapPoints[index - 1] + 1
+                );
+
+                if (!snapPoints.length) {
+                    snapPoints = [0];
+                }
+
+                currentIndex = Math.min(currentIndex, snapPoints.length - 1);
+                currentOffset = snapPoints[currentIndex];
+
+                updatePosition(false);
+            }
+
+            function updatePosition(animate = true) {
+                track.style.transition = animate
+                    ? `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`
+                    : 'none';
+
+                track.style.transform = `translate3d(${-currentOffset}px, 0, 0)`;
+
+                updateSliderControls();
+            }
+
             function updateSliderControls() {
-                if (!wrapper || !sliderProgress || !sliderPrev || !sliderNext) return;
-                const scrollLeft = wrapper.scrollLeft;
-                const maxScroll = wrapper.scrollWidth - wrapper.clientWidth;
-                
-                if (maxScroll <= 0) {
-                    sliderProgress.style.width = '100%';
-                    return;
+                const total = snapPoints.length;
+
+                const progress = total > 1
+                    ? (currentIndex / (total - 1)) * 100
+                    : 100;
+
+                sliderProgress.style.width = `${progress}%`;
+
+                sliderPrev.classList.toggle('text-gray-400', currentIndex <= 0);
+                sliderPrev.classList.toggle('text-white', currentIndex > 0);
+
+                sliderNext.classList.toggle('text-gray-400', currentIndex >= total - 1);
+                sliderNext.classList.toggle('text-white', currentIndex < total - 1);
+
+                sliderPrev.style.pointerEvents = currentIndex <= 0 ? 'none' : 'auto';
+                sliderNext.style.pointerEvents = currentIndex >= total - 1 ? 'none' : 'auto';
+            }
+
+            function goToIndex(index: number, animate = true) {
+                currentIndex = Math.max(0, Math.min(index, snapPoints.length - 1));
+                currentOffset = snapPoints[currentIndex];
+
+                updatePosition(animate);
+            }
+
+            function resetDragState() {
+                isDragging = false;
+                isHorizontalDrag = false;
+                wrapper.classList.remove('is-dragging');
+                track.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+            }
+
+            function finishDragging(pointerId: number, event?: PointerEvent) {
+                if (!isDragging || pointerId !== activePointerId) return;
+
+                const distance = startX - (event?.clientX ?? lastX);
+                const finalVelocity = Math.abs(velocity);
+
+                if (isHorizontalDrag) {
+                    suppressClick = true;
+
+                    if (suppressClickTimer) clearTimeout(suppressClickTimer);
+
+                    if (
+                        distance > MIN_SWIPE_DISTANCE ||
+                        (distance > 10 && finalVelocity > VELOCITY_THRESHOLD)
+                    ) {
+                        goToIndex(currentIndex + 1);
+                    } else if (
+                        distance < -MIN_SWIPE_DISTANCE ||
+                        (distance < -10 && finalVelocity > VELOCITY_THRESHOLD)
+                    ) {
+                        goToIndex(currentIndex - 1);
+                    } else {
+                        goToIndex(currentIndex);
+                    }
+
+                    suppressClickTimer = setTimeout(() => {
+                        suppressClick = false;
+                    }, 350);
+                } else {
+                    goToIndex(currentIndex);
                 }
 
-                const progressRatio = scrollLeft / maxScroll;
-                const barWidth = 35 + (progressRatio * 65);
-                sliderProgress.style.width = `${barWidth}%`;
+                const capturedPointer = activePointerId;
+                activePointerId = null;
 
-                if (scrollLeft <= 5) {
-                    sliderPrev.classList.remove('text-white');
-                    sliderPrev.classList.add('text-gray-400');
-                } else {
-                    sliderPrev.classList.remove('text-gray-400');
-                    sliderPrev.classList.add('text-white');
-                }
+                resetDragState();
 
-                if (scrollLeft >= maxScroll - 5) {
-                    sliderNext.classList.remove('text-white');
-                    sliderNext.classList.add('text-gray-400');
-                } else {
-                    sliderNext.classList.remove('text-gray-400');
-                    sliderNext.classList.add('text-white');
+                if (
+                    capturedPointer !== null &&
+                    wrapper.hasPointerCapture(capturedPointer)
+                ) {
+                    wrapper.releasePointerCapture(capturedPointer);
                 }
             }
 
-            // Scroll forward smoothly by one card width plus gap
-            sliderNext?.addEventListener('click', () => {
-                if (wrapper) {
-                    const cardWidth = (wrapper.querySelector('.gallery-item') as HTMLElement)?.offsetWidth || 400;
-                    wrapper.scrollBy({ left: cardWidth + 20, behavior: 'smooth' });
-                }
+            wrapper.addEventListener('pointerdown', (event: PointerEvent) => {
+                if (event.pointerType === 'mouse' && event.button !== 0) return;
+                if ((event.target as HTMLElement).closest('button')) return;
+
+                isDragging = true;
+                isHorizontalDrag = false;
+                activePointerId = event.pointerId;
+
+                startX = event.clientX;
+                startY = event.clientY;
+                lastX = event.clientX;
+                lastTime = performance.now();
+                startOffset = currentOffset;
+                velocity = 0;
+
+                track.style.transition = 'none';
             });
 
-            // Scroll backward smoothly by one card width plus gap
-            sliderPrev?.addEventListener('click', () => {
-                if (wrapper) {
-                    const cardWidth = (wrapper.querySelector('.gallery-item') as HTMLElement)?.offsetWidth || 400;
-                    wrapper.scrollBy({ left: -(cardWidth + 20), behavior: 'smooth' });
-                }
-            });
+            wrapper.addEventListener('pointermove', (event: PointerEvent) => {
+                if (!isDragging || event.pointerId !== activePointerId) return;
 
-            wrapper?.addEventListener('scroll', updateSliderControls);
+                const deltaX = event.clientX - startX;
+                const deltaY = event.clientY - startY;
 
-            // Prevent dragging gestures from accidentally triggering lightbox clicks
-            let startX = 0;
-            let startY = 0;
-            let isMoving = false;
-
-            galleryItems.forEach((item, index) => {
-                item.addEventListener('pointerdown', (e: any) => {
-                    startX = e.clientX;
-                    startY = e.clientY;
-                    isMoving = false;
-                });
-
-                item.addEventListener('pointermove', (e: any) => {
-                    if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
-                        isMoving = true;
+                if (!isHorizontalDrag) {
+                    if (
+                        Math.abs(deltaX) < DIRECTION_THRESHOLD &&
+                        Math.abs(deltaY) < DIRECTION_THRESHOLD
+                    ) {
+                        return;
                     }
-                });
 
-                item.addEventListener('click', () => {
-                    if (isMoving) return;
-                    showLightboxImage(index);
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                        modal.classList.add('flex');
+                    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                        const pointerId = activePointerId;
+
+                        activePointerId = null;
+                        resetDragState();
+
+                        if (wrapper.hasPointerCapture(pointerId)) {
+                            wrapper.releasePointerCapture(pointerId);
+                        }
+
+                        return;
                     }
-                });
+
+                    isHorizontalDrag = true;
+                    wrapper.classList.add('is-dragging');
+                    wrapper.setPointerCapture(event.pointerId);
+                }
+
+                if (event.cancelable) event.preventDefault();
+
+                const now = performance.now();
+                const timeDelta = Math.max(1, now - lastTime);
+
+                velocity = (event.clientX - lastX) / timeDelta;
+
+                lastX = event.clientX;
+                lastTime = now;
+
+                const nextOffset = startOffset - deltaX;
+
+                currentOffset = Math.max(
+                    0,
+                    Math.min(nextOffset, getMaxOffset())
+                );
+
+                track.style.transform = `translate3d(${-currentOffset}px, 0, 0)`;
             });
 
-            let currentIndex = 0;
+            wrapper.addEventListener('pointerup', (event: PointerEvent) => {
+                finishDragging(event.pointerId, event);
+            });
+
+            wrapper.addEventListener('pointercancel', (event: PointerEvent) => {
+                if (event.pointerId !== activePointerId) return;
+
+                activePointerId = null;
+                resetDragState();
+                goToIndex(currentIndex);
+            });
+
+            wrapper.addEventListener('lostpointercapture', (event: PointerEvent) => {
+                if (event.pointerId !== activePointerId) return;
+
+                activePointerId = null;
+                resetDragState();
+                goToIndex(currentIndex);
+            });
+
+            wrapper.addEventListener('click', (event: MouseEvent) => {
+                if (suppressClick) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    suppressClick = false;
+
+                    if (suppressClickTimer) {
+                        clearTimeout(suppressClickTimer);
+                        suppressClickTimer = null;
+                    }
+                }
+            }, true);
+
+            track.addEventListener('dragstart', event => {
+                event.preventDefault();
+            });
+
+            sliderPrev.addEventListener('click', () => {
+                goToIndex(currentIndex - 1);
+            });
+
+            sliderNext.addEventListener('click', () => {
+                goToIndex(currentIndex + 1);
+            });
+
             function showLightboxImage(index: number) {
-                currentIndex = (index + imagesData.length) % imagesData.length;
-                if (modalImg && modalCaption) {
-                    modalImg.src = imagesData[currentIndex].src;
-                    modalCaption.textContent = imagesData[currentIndex].alt;
-                }
+                if (!imagesData.length || !modalImg || !modalCaption) return;
+
+                lightboxIndex = (index + imagesData.length) % imagesData.length;
+
+                modalImg.src = imagesData[lightboxIndex].src;
+                modalImg.alt = imagesData[lightboxIndex].alt;
+                modalCaption.textContent = imagesData[lightboxIndex].alt;
+            }
+
+            function openModal(index: number) {
+                if (!modal) return;
+
+                showLightboxImage(index);
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+
+                document.body.style.overflow = 'hidden';
             }
 
             function closeModal() {
-                if (modal) {
-                    modal.classList.remove('flex');
-                    modal.classList.add('hidden');
-                }
+                if (!modal) return;
+
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+
+                document.body.style.overflow = '';
             }
 
-            codeCloseBtn?.addEventListener('click', closeModal);
-            prevBtn?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                showLightboxImage(currentIndex - 1);
-            });
-            nextBtn?.addEventListener('click', (e) => {
-                e.stopPropagation();
-                showLightboxImage(currentIndex + 1);
+            galleryItems.forEach((item, index) => {
+                item.addEventListener('click', () => {
+                    if (suppressClick) return;
+
+                    openModal(index);
+                });
             });
 
-            modal?.addEventListener('click', (e) => {
-                if (e.target === modal) {
+            closeBtn?.addEventListener('click', closeModal);
+
+            lightboxPrev?.addEventListener('click', event => {
+                event.stopPropagation();
+                showLightboxImage(lightboxIndex - 1);
+            });
+
+            lightboxNext?.addEventListener('click', event => {
+                event.stopPropagation();
+                showLightboxImage(lightboxIndex + 1);
+            });
+
+            modal?.addEventListener('click', event => {
+                if (event.target === modal) {
                     closeModal();
                 }
             });
 
-            document.addEventListener('keydown', (e) => {
-                if (modal && !modal.classList.contains('hidden')) {
-                    if (e.key === 'Escape') closeModal();
-                    if (e.key === 'ArrowLeft') showLightboxImage(currentIndex - 1);
-                    if (e.key === 'ArrowRight') showLightboxImage(currentIndex + 1);
+            document.addEventListener('keydown', event => {
+                if (!modal || modal.classList.contains('hidden')) return;
+
+                if (event.key === 'Escape') {
+                    closeModal();
+                }
+
+                if (event.key === 'ArrowLeft') {
+                    showLightboxImage(lightboxIndex - 1);
+                }
+
+                if (event.key === 'ArrowRight') {
+                    showLightboxImage(lightboxIndex + 1);
                 }
             });
 
-            updateSliderControls();
+            let resizeTimer: ReturnType<typeof setTimeout>;
+
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+
+                resizeTimer = setTimeout(() => {
+                    buildSnapPoints();
+                }, 100);
+            });
+
+            buildSnapPoints();
         });
     </script>
 </Layout>
