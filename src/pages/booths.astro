@@ -13,6 +13,7 @@ const boothProjects = allProjects
     
     <section class="relative w-full min-h-[calc(100vh-90px)] bg-[var(--darker-brown)] pt-18 pb-8 overflow-hidden">
         
+        <!-- Background image overlay with luminosity effect -->
         <div 
             class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-10 mix-blend-luminosity pointer-events-none z-0"
             style="background-image: url('/images/background.jpg');"
@@ -31,10 +32,11 @@ const boothProjects = allProjects
                 <h1 class="text-[2.5rem] md:text-[3.5rem] font-extrabold leading-tight text-white">Exhibition Booths</h1>
             </div>
 
-            <div class="relative overflow-hidden w-full touch-pan-y draggable-slider">
-                <div id="slider-track" class="flex gap-[35px] transition-transform duration-500 ease-out will-change-transform pt-5 draggable-track cursor-grab active:cursor-grabbing">
+            <!-- Momentum slider wrapper supporting native smooth touch navigation -->
+            <div class="overflow-x-auto no-scrollbar momentum-slider cursor-grab relative w-full pb-4" id="sliderWrapper">
+                <div id="slider-track" class="flex gap-[35px] w-max pt-5 cursor-grab active:cursor-grabbing">
                     {boothProjects.map((project) => (
-                        <a href={`/projects/${project.id}`} class="group w-full md:w-[calc(50%-17.5px)] lg:w-[calc(33.333%-23.33px)] bg-[#352f2a]/90 backdrop-blur-sm rounded-[10px] overflow-hidden shadow-lg no-underline flex-shrink-0 transition-transform duration-300 hover:-translate-y-2 border border-white/10 select-none">
+                        <a href={`/projects/${project.id}`} class="group w-[350px] md:w-[380px] bg-[#352f2a]/90 backdrop-blur-sm rounded-[10px] overflow-hidden shadow-lg no-underline flex-shrink-0 transition-transform duration-300 hover:-translate-y-2 border border-white/10 select-none">
                             <div class="w-full h-[220px] sm:h-[240px] overflow-hidden pointer-events-none">
                                 <img 
                                     src={project.data.gallery && project.data.gallery.length > 0 ? project.data.gallery[0] : '/images/about-2.jpg'} 
@@ -51,6 +53,7 @@ const boothProjects = allProjects
                 </div>
             </div>
 
+            <!-- Slider navigation buttons and progress indicator controls -->
             <div class="flex items-center justify-end mt-[40px]">
                 <div class="flex items-center gap-[18px]">
                     <button id="prev-btn" type="button" class="text-[11px] tracking-[2.5px] font-bold text-white/50 hover:text-white transition-colors cursor-pointer uppercase select-none">
@@ -70,62 +73,71 @@ const boothProjects = allProjects
 
     <script is:inline>
         document.addEventListener('DOMContentLoaded', () => {
-            const track = document.getElementById('slider-track');
+            const wrapper = document.getElementById('sliderWrapper');
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
             const progressBar = document.getElementById('progress-bar');
 
-            if (!track || !prevBtn || !nextBtn || !progressBar) return;
+            if (!wrapper || !prevBtn || !nextBtn || !progressBar) return;
 
-            const cards = Array.from(track.children);
-            let currentIndex = 0;
+            const cards = wrapper.querySelectorAll('a');
 
-            function getVisibleCards() {
-                if (window.innerWidth >= 1024) return 3;
-                if (window.innerWidth >= 768) return 2;
-                return 1;
+            // Update progress bar width smoothly based on native horizontal scroll position
+            function updateProgress() {
+                const scrollLeft = wrapper.scrollLeft;
+                const maxScrollLeft = wrapper.scrollWidth - wrapper.clientWidth;
+                const progress = maxScrollLeft > 0 ? (scrollLeft / maxScrollLeft) * 100 : 0;
+                progressBar.style.width = `${Math.max(35, progress)}%`;
+
+                prevBtn.style.opacity = scrollLeft <= 5 ? '0.4' : '1';
+                nextBtn.style.opacity = scrollLeft >= maxScrollLeft - 5 ? '0.4' : '1';
             }
 
-            function getMaxIndex() {
-                return Math.max(0, cards.length - getVisibleCards());
-            }
-
-            function updateSlider() {
-                if (!cards.length) return;
-                const maxIndex = getMaxIndex();
-                currentIndex = Math.min(currentIndex, maxIndex);
-
-                const cardWidth = cards[0].getBoundingClientRect().width;
-                const gap = 35;
-                const moveAmount = currentIndex * (cardWidth + gap);
-                track.style.transform = `translateX(-${moveAmount}px)`;
-
-                const progressPercent = maxIndex > 0 ? 35 + (currentIndex / maxIndex) * 65 : 35;
-                progressBar.style.width = `${progressPercent}%`;
-
-                prevBtn.style.opacity = currentIndex === 0 ? '0.4' : '1';
-                nextBtn.style.opacity = currentIndex >= maxIndex ? '0.4' : '1';
-
-                prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex >= maxIndex;
-            }
-
+            // Scroll forward smoothly by one card width plus gap
             nextBtn.addEventListener('click', () => {
-                if (currentIndex < getMaxIndex()) {
-                    currentIndex++;
-                    updateSlider();
+                if (cards.length > 0) {
+                    const cardWidth = cards[0].offsetWidth + 35;
+                    wrapper.scrollBy({ left: cardWidth, behavior: 'smooth' });
                 }
             });
 
+            // Scroll backward smoothly by one card width plus gap
             prevBtn.addEventListener('click', () => {
-                if (currentIndex > 0) {
-                    currentIndex--;
-                    updateSlider();
+                if (cards.length > 0) {
+                    const cardWidth = cards[0].offsetWidth + 35;
+                    wrapper.scrollBy({ left: -cardWidth, behavior: 'smooth' });
                 }
             });
 
-            window.addEventListener('resize', updateSlider);
-            updateSlider();
+            wrapper.addEventListener('scroll', updateProgress);
+
+            // Prevent dragging gestures from accidentally triggering link navigation clicks
+            let startX = 0;
+            let startY = 0;
+            let isMoving = false;
+
+            cards.forEach((card) => {
+                card.addEventListener('pointerdown', (e) => {
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    isMoving = false;
+                });
+
+                card.addEventListener('pointermove', (e) => {
+                    if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
+                        isMoving = true;
+                    }
+                });
+
+                card.addEventListener('click', (e) => {
+                    if (isMoving) {
+                        e.preventDefault();
+                        return;
+                    }
+                });
+            });
+
+            updateProgress();
         });
     </script>
 </Layout>

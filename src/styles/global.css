@@ -352,9 +352,8 @@
   }
 
   /* ==========================================
-  
      6. Services Accordion Section Styles
-          ========================================== */
+     ========================================== */
   .services-accordion-section {
     padding: 90px 8%;
     background-color: var(--bg-beige, #fff5e7);
@@ -439,7 +438,6 @@
     transition: opacity 0.5s ease, max-height 0.5s ease;
   }
 
-
   .service-panel.active {
     flex: 2.5;
     background-color: rgba(255, 255, 255, 0.05);
@@ -454,7 +452,6 @@
     color: var(--accent-orange, #ffc06d);
   }
 
-
   @media (max-width: 768px) {
     .services-accordion {
       flex-direction: column;
@@ -468,7 +465,6 @@
   }
 
   /* ==========================================
-
      7. Projects Slider Section Styles
      ========================================== */
   .projects-slider-section {
@@ -811,7 +807,31 @@
 }
 
 /* ==========================================
-   11. Mobile Responsive Media Query
+   11. Momentum Touch Scrolling Enhancements
+   ========================================== */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .momentum-slider {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+  }
+
+  .momentum-slider>* {
+    scroll-snap-align: start;
+  }
+}
+
+/* ==========================================
+   12. Mobile Responsive Media Query
    ========================================== */
 @media (max-width: 768px) {
   .mobile-menu-btn {

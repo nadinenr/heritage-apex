@@ -22,6 +22,7 @@ const projects = [
 ---
 
 <section id="projects" class="py-[120px] px-[8%] bg-[var(--dark-navy)] relative overflow-hidden">
+    <!-- Background image overlay with subtle luminosity effect -->
     <div 
         class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-5 mix-blend-luminosity pointer-events-none"
         style="background-image: url('/images/background.jpg');"
@@ -38,8 +39,9 @@ const projects = [
             <h2 class="text-[3rem] md:text-[3.5rem] font-extrabold text-white">Our Work</h2>
         </div>
 
-        <div class="overflow-hidden relative touch-pan-y draggable-slider" id="projectsSliderWrapper">
-            <div class="flex gap-[35px] transition-transform duration-500 ease-out cursor-grab active:cursor-grabbing draggable-track" id="projectsTrack">
+        <!-- Momentum slider wrapper supporting native smooth touch navigation -->
+        <div class="overflow-x-auto no-scrollbar momentum-slider cursor-grab relative pb-[10px]" id="projectsSliderWrapper">
+            <div class="flex gap-[35px] w-max cursor-grab active:cursor-grabbing" id="projectsTrack">
                 {projects.map((project) => (
                     <a href={project.link} class="min-w-[350px] md:min-w-[380px] flex-1 rounded-[16px] overflow-hidden shadow-xl no-underline group flex flex-col transition-transform duration-300 hover:-translate-y-2 border border-white/10 select-none">
                         <div class="w-full h-[260px] overflow-hidden pointer-events-none">
@@ -54,6 +56,7 @@ const projects = [
             </div>
         </div>
 
+        <!-- Slider navigation buttons and dynamic progress indicator -->
         <div class="flex justify-end items-center gap-[20px] mt-[50px]">
             <button type="button" id="prevBtn" class="text-xs font-bold tracking-[2px] text-white/50 hover:text-white transition-colors cursor-pointer uppercase select-none">PREV.</button>
             <div class="w-[120px] h-[2px] bg-white/15 relative overflow-hidden">
@@ -66,48 +69,38 @@ const projects = [
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const track = document.getElementById('projectsTrack') as HTMLElement;
+        const wrapper = document.getElementById('projectsSliderWrapper') as HTMLElement;
         const prevBtn = document.getElementById('prevBtn') as HTMLButtonElement;
         const nextBtn = document.getElementById('nextBtn') as HTMLButtonElement;
         const progressBar = document.getElementById('progressBar') as HTMLElement;
 
-        if (!track || !prevBtn || !nextBtn || !progressBar) return;
+        if (!wrapper || !prevBtn || !nextBtn || !progressBar) return;
 
-        const slides = track.querySelectorAll('a');
-        const totalSlides = slides.length;
-        let currentIndex = 0;
+        const slides = wrapper.querySelectorAll('a');
 
-        function updateSlider() {
-            if (slides.length === 0) return;
-            const slideWidth = (slides[0] as HTMLElement).clientWidth + 35;
-            const maxIndex = totalSlides - 1;
-
-            if (currentIndex > maxIndex) currentIndex = maxIndex;
-            if (currentIndex < 0) currentIndex = 0;
-
-            track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
-
-            const progressPercentage = ((currentIndex + 1) / totalSlides) * 100;
-            progressBar.style.width = `${progressPercentage}%`;
-
-            prevBtn.style.opacity = currentIndex === 0 ? '0.4' : '1';
-            nextBtn.style.opacity = currentIndex >= maxIndex ? '0.4' : '1';
+        // Update progress bar width smoothly based on native horizontal scroll position
+        function updateProgress() {
+            const scrollLeft = wrapper.scrollLeft;
+            const maxScrollLeft = wrapper.scrollWidth - wrapper.clientWidth;
+            const progress = maxScrollLeft > 0 ? (scrollLeft / maxScrollLeft) * 100 : 0;
+            progressBar.style.width = `${Math.max(33, progress)}%`;
         }
 
+        // Scroll forward smoothly by one slide width plus gap
         nextBtn.addEventListener('click', () => {
-            if (currentIndex < totalSlides - 1) {
-                currentIndex++;
-                updateSlider();
-            }
+            const slideWidth = (slides[0] as HTMLElement).offsetWidth + 35;
+            wrapper.scrollBy({ left: slideWidth, behavior: 'smooth' });
         });
 
+        // Scroll backward smoothly by one slide width plus gap
         prevBtn.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateSlider();
-            }
+            const slideWidth = (slides[0] as HTMLElement).offsetWidth + 35;
+            wrapper.scrollBy({ left: -slideWidth, behavior: 'smooth' });
         });
 
+        wrapper.addEventListener('scroll', updateProgress);
+
+        // Prevent dragging gestures from accidentally triggering link navigation clicks
         let startX = 0;
         let startY = 0;
         let isMoving = false;
@@ -132,8 +125,5 @@ const projects = [
                 }
             });
         });
-
-        window.addEventListener('resize', updateSlider);
-        updateSlider();
     });
 </script>

@@ -4,6 +4,7 @@ const newsItems = await getCollection('news');
 ---
 
 <section class="newsroom-section py-[120px] px-[8%] bg-[var(--dark-navy)] relative overflow-hidden" id="newsroom">
+    <!-- Background image with overlay styling -->
     <div 
         class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-5 mix-blend-luminosity pointer-events-none"
         style="background-image: url('/images/background.jpg');"
@@ -20,8 +21,9 @@ const newsItems = await getCollection('news');
             </h2>
         </div>
 
-        <div class="overflow-hidden relative pb-[10px] touch-pan-y draggable-slider" id="newsSliderWrapper">
-            <div class="flex gap-[35px] transition-transform duration-500 ease-out cursor-grab active:cursor-grabbing draggable-track" id="newsTrack">
+        <!-- Momentum slider wrapper providing native smooth scrolling -->
+        <div class="overflow-x-auto no-scrollbar momentum-slider cursor-grab relative pb-[10px]" id="newsSliderWrapper">
+            <div class="flex gap-[35px] w-max cursor-grab active:cursor-grabbing" id="newsTrack">
                 {newsItems.map((item) => (
                     <div class="news-card w-[350px] md:w-[380px] h-[480px] shrink-0 rounded-[16px] overflow-hidden shadow-xl flex flex-col relative group border border-white/10 select-none">
                         <img src={item.data.image} alt={item.data.title} class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 pointer-events-none">
@@ -42,6 +44,7 @@ const newsItems = await getCollection('news');
             </div>
         </div>
 
+        <!-- Slider navigation and progress bar controls -->
         <div class="flex justify-end items-center gap-[20px] mt-[50px]">
             <button type="button" id="newsPrevBtn" class="text-xs font-bold tracking-[2px] text-white hover:text-[var(--accent-orange)] transition-colors cursor-pointer uppercase select-none">PREV.</button>
             <div class="w-[120px] h-[2px] bg-white/10 relative overflow-hidden">
@@ -54,49 +57,38 @@ const newsItems = await getCollection('news');
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const track = document.getElementById('newsTrack') as HTMLElement;
+        const wrapper = document.getElementById('newsSliderWrapper') as HTMLElement;
         const prevBtn = document.getElementById('newsPrevBtn') as HTMLButtonElement;
         const nextBtn = document.getElementById('newsNextBtn') as HTMLButtonElement;
         const progressBar = document.getElementById('newsProgressBar') as HTMLElement;
 
-        if (!track || !prevBtn || !nextBtn || !progressBar) return;
+        if (!wrapper || !prevBtn || !nextBtn || !progressBar) return;
 
-        const cards = track.querySelectorAll('.news-card');
-        const totalCards = cards.length;
-        let currentIndex = 0;
+        const cards = wrapper.querySelectorAll('.news-card');
 
-        function updateSlider() {
-            if (cards.length === 0) return;
-            const cardWidth = (cards[0] as HTMLElement).clientWidth + 35;
-            const maxIndex = totalCards - 1;
-
-            if (currentIndex > maxIndex) currentIndex = maxIndex;
-            if (currentIndex < 0) currentIndex = 0;
-
-            track.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
-
-            const progressPercentage = ((currentIndex + 1) / totalCards) * 100;
-            progressBar.style.width = `${progressPercentage}%`;
-
-            prevBtn.style.opacity = currentIndex === 0 ? '0.4' : '1';
-            nextBtn.style.opacity = currentIndex >= maxIndex ? '0.4' : '1';
+        // Update progress bar width smoothly based on native scroll position
+        function updateProgress() {
+            const scrollLeft = wrapper.scrollLeft;
+            const maxScrollLeft = wrapper.scrollWidth - wrapper.clientWidth;
+            const progress = maxScrollLeft > 0 ? (scrollLeft / maxScrollLeft) * 100 : 0;
+            progressBar.style.width = `${Math.max(25, progress)}%`;
         }
 
+        // Handle Next button click with smooth native behavior
         nextBtn.addEventListener('click', () => {
-            if (currentIndex < totalCards - 1) {
-                currentIndex++;
-                updateSlider();
-            }
+            const cardWidth = (cards[0] as HTMLElement).offsetWidth + 35;
+            wrapper.scrollBy({ left: cardWidth, behavior: 'smooth' });
         });
 
+        // Handle Prev button click with smooth native behavior
         prevBtn.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateSlider();
-            }
+            const cardWidth = (cards[0] as HTMLElement).offsetWidth + 35;
+            wrapper.scrollBy({ left: -cardWidth, behavior: 'smooth' });
         });
 
-        // منع تداخل السحب مع فتح الكارت (لو حصل سحب حقيقي ميعتبرش كليك)
+        wrapper.addEventListener('scroll', updateProgress);
+
+        // Prevent dragging gestures from triggering unintended clicks
         let startX = 0;
         let startY = 0;
         let isMoving = false;
@@ -122,9 +114,6 @@ const newsItems = await getCollection('news');
                 card.classList.toggle('active-card');
             });
         });
-
-        window.addEventListener('resize', updateSlider);
-        updateSlider();
     });
 </script>
 

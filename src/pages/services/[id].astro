@@ -19,7 +19,9 @@ const { Content } = await render(service);
 
 <Layout title={`${title} | HERITAGE APEX`} image={image}>
     
-    <section class="relative w-full min-h-[calc(100vh-90px)] bg-[var(--darker-brown)] pt-18 pb-16 overflow-hidden">
+    <!-- Main section wrapper with dark background styling -->
+    <section class="momentum-slider cursor-grab relative w-full min-h-[calc(100vh-90px)] bg-[var(--darker-brown)] pt-18 pb-16 overflow-hidden">
+        <!-- Background texture overlay with luminosity effect -->
         <div 
             class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-5 mix-blend-luminosity pointer-events-none z-0"
             style="background-image: url('/images/background.jpg');"
@@ -48,6 +50,7 @@ const { Content } = await render(service);
                 )}
             </div>
 
+            <!-- Call to action section for returning to services -->
             <div class="mt-20">
                 <div class="bg-[#352f2a]/90 backdrop-blur-sm p-6 sm:p-8 rounded-2xl border border-white/10 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-6">
                     <div>

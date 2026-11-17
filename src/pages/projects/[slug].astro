@@ -29,7 +29,7 @@ const { data } = entry;
 <Layout title={`${data.title} | HERITAGE APEX`}>
     
     <!-- Main Section Wrapper with Dark Background and Fixed Min-Height -->
-    <section class="relative w-full min-h-[calc(100vh-90px)] bg-[var(--darker-brown)] pt-12 pb-16 overflow-hidden">
+    <section class="momentum-slider cursor-grab relative w-full min-h-[calc(100vh-90px)] bg-[var(--darker-brown)] pt-12 pb-16 overflow-hidden">
 
         <!-- Background Image Layer matching portfolio pages -->
         <div 
@@ -60,11 +60,11 @@ const { data } = entry;
                     <h2 class="text-[1.6rem] sm:text-[2rem] font-bold text-white">Project Views</h2>
                 </div>
 
-                <!-- Slider Track Wrapper -->
-                <div class="overflow-hidden rounded-[12px] py-2">
-                    <div id="horizontalSlider" class="flex gap-[20px] md:gap-[30px] transition-transform duration-700 ease-out">
+                <!-- Momentum slider wrapper supporting native smooth touch navigation -->
+                <div class="overflow-x-auto no-scrollbar momentum-slider rounded-[12px] py-2" id="horizontalSliderWrapper">
+                    <div id="horizontalSlider" class="flex gap-[20px] md:gap-[30px] w-max cursor-grab active:cursor-grabbing">
                         {data.gallery.map((img: string, index: number) => (
-                            <div class="gallery-item min-w-[85%] sm:min-w-[55%] md:min-w-[42%] lg:min-w-[31.5%] h-[240px] sm:h-[300px] md:h-[340px] rounded-[12px] overflow-hidden shadow-xl relative cursor-pointer flex-shrink-0 group border border-white/10" data-index={index}>
+                            <div class="gallery-item min-w-[85%] sm:min-w-[55%] md:min-w-[42%] lg:min-w-[31.5%] h-[240px] sm:h-[300px] md:h-[340px] rounded-[12px] overflow-hidden shadow-xl relative cursor-pointer flex-shrink-0 group border border-white/10 select-none" data-index={index}>
                                 <!-- Added brightness-95 contrast-95 to balance colors and prevent over-saturation -->
                                 <img src={img} alt={`Gallery image ${index + 1}`} class="w-full h-full object-cover brightness-95 contrast-95 transition-transform duration-700 group-hover:scale-105 pointer-events-none" />
                                 <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
@@ -81,7 +81,7 @@ const { data } = entry;
                         PREV.
                     </button>
                     <div class="w-[80px] md:w-[100px] h-[2px] bg-white/15 relative overflow-hidden rounded-full">
-                        <div id="sliderProgress" class="h-full bg-[var(--accent-orange)] transition-all duration-700 ease-out" style="width: 35%;"></div>
+                        <div id="sliderProgress" class="h-full bg-[var(--accent-orange)] transition-all duration-300 ease-out" style="width: 35%;"></div>
                     </div>
                     <button id="sliderNext" class="text-[11px] font-bold tracking-[2.5px] uppercase text-white hover:text-[var(--accent-orange)] transition-colors cursor-pointer bg-transparent border-none">
                         NEXT
@@ -104,17 +104,16 @@ const { data } = entry;
         <button id="lightboxNext" class="absolute right-[15px] md:right-[30px] top-1/2 -translate-y-1/2 bg-white/10 text-white text-[1.5rem] md:text-[1.8rem] px-3.5 py-3 md:px-5 md:py-4 border-none cursor-pointer rounded hover:bg-[var(--accent-orange)] z-50">&#10095;</button>
     </div>
 
-
     <script>
         /**
          * Interactive Gallery Slider & Lightbox Script
-         * Handles horizontal scrolling, progress tracking, and full-screen image viewing.
+         * Handles native momentum scrolling, smooth controls, and full-screen image viewing.
          */
         document.addEventListener('DOMContentLoaded', () => {
-            const slider = document.getElementById('horizontalSlider');
+            const wrapper = document.getElementById('horizontalSliderWrapper') as HTMLElement;
             const sliderPrev = document.getElementById('sliderPrev');
             const sliderNext = document.getElementById('sliderNext');
-            const sliderProgress = document.getElementById('sliderProgress');
+            const sliderProgress = document.getElementById('sliderProgress') as HTMLElement;
             const galleryItems = document.querySelectorAll('.gallery-item');
             
             const modal = document.getElementById('lightboxModal');
@@ -132,20 +131,22 @@ const { data } = entry;
                 };
             });
 
-            let scrollAmount = 0;
-
+            // Update progress bar width smoothly based on native horizontal scroll position
             function updateSliderControls() {
-                if (!slider || !sliderProgress || !sliderPrev || !sliderNext) return;
-                const maxScroll = slider.scrollWidth - slider.clientWidth;
+                if (!wrapper || !sliderProgress || !sliderPrev || !sliderNext) return;
+                const scrollLeft = wrapper.scrollLeft;
+                const maxScroll = wrapper.scrollWidth - wrapper.clientWidth;
+                
                 if (maxScroll <= 0) {
                     sliderProgress.style.width = '100%';
                     return;
                 }
-                const progressRatio = scrollAmount / maxScroll;
+
+                const progressRatio = scrollLeft / maxScroll;
                 const barWidth = 35 + (progressRatio * 65);
                 sliderProgress.style.width = `${barWidth}%`;
 
-                if (scrollAmount <= 5) {
+                if (scrollLeft <= 5) {
                     sliderPrev.classList.remove('text-white');
                     sliderPrev.classList.add('text-gray-400');
                 } else {
@@ -153,7 +154,7 @@ const { data } = entry;
                     sliderPrev.classList.add('text-white');
                 }
 
-                if (scrollAmount >= maxScroll - 5) {
+                if (scrollLeft >= maxScroll - 5) {
                     sliderNext.classList.remove('text-white');
                     sliderNext.classList.add('text-gray-400');
                 } else {
@@ -162,23 +163,50 @@ const { data } = entry;
                 }
             }
 
+            // Scroll forward smoothly by one card width plus gap
             sliderNext?.addEventListener('click', () => {
-                if (slider) {
-                    const cardWidth = (slider.querySelector('.gallery-item') as HTMLElement)?.offsetWidth || 400;
-                    const maxScroll = slider.scrollWidth - slider.clientWidth;
-                    scrollAmount = Math.min(scrollAmount + cardWidth + 20, maxScroll);
-                    slider.style.transform = `translateX(-${scrollAmount}px)`;
-                    updateSliderControls();
+                if (wrapper) {
+                    const cardWidth = (wrapper.querySelector('.gallery-item') as HTMLElement)?.offsetWidth || 400;
+                    wrapper.scrollBy({ left: cardWidth + 20, behavior: 'smooth' });
                 }
             });
 
+            // Scroll backward smoothly by one card width plus gap
             sliderPrev?.addEventListener('click', () => {
-                if (slider) {
-                    const cardWidth = (slider.querySelector('.gallery-item') as HTMLElement)?.offsetWidth || 400;
-                    scrollAmount = Math.max(scrollAmount - cardWidth - 20, 0);
-                    slider.style.transform = `translateX(-${scrollAmount}px)`;
-                    updateSliderControls();
+                if (wrapper) {
+                    const cardWidth = (wrapper.querySelector('.gallery-item') as HTMLElement)?.offsetWidth || 400;
+                    wrapper.scrollBy({ left: -(cardWidth + 20), behavior: 'smooth' });
                 }
+            });
+
+            wrapper?.addEventListener('scroll', updateSliderControls);
+
+            // Prevent dragging gestures from accidentally triggering lightbox clicks
+            let startX = 0;
+            let startY = 0;
+            let isMoving = false;
+
+            galleryItems.forEach((item, index) => {
+                item.addEventListener('pointerdown', (e: any) => {
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    isMoving = false;
+                });
+
+                item.addEventListener('pointermove', (e: any) => {
+                    if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
+                        isMoving = true;
+                    }
+                });
+
+                item.addEventListener('click', () => {
+                    if (isMoving) return;
+                    showLightboxImage(index);
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                    }
+                });
             });
 
             let currentIndex = 0;
@@ -189,16 +217,6 @@ const { data } = entry;
                     modalCaption.textContent = imagesData[currentIndex].alt;
                 }
             }
-
-            galleryItems.forEach((item, index) => {
-                item.addEventListener('click', () => {
-                    showLightboxImage(index);
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                        modal.classList.add('flex');
-                    }
-                });
-            });
 
             function closeModal() {
                 if (modal) {

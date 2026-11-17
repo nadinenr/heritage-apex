@@ -1,8 +1,6 @@
 ---
 /**
  * Layout Component: Main Site Template
- * Description: Establishes global HTML structure, fonts, meta tags, and ensures 
- * a unified dark theme background, smooth vertical scrolling, and global touch/mouse drag support.
  */
 import Navbar from '../components/Navbar.astro';
 import MiniFooter from '../components/MiniFooter.astro';
@@ -34,7 +32,6 @@ const {
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* Global Smooth Vertical Scrolling & Mobile Touch Optimization */
         html {
             overflow-x: hidden;
             overflow-y: auto;
@@ -53,76 +50,73 @@ const {
         }
     </style>
 </head>
-<!-- Unified background color on body to match --darker-brown theme completely -->
 <body class="bg-[var(--darker-brown)] text-white antialiased m-0 p-0 selection:bg-orange-500 selection:text-white">
 
-    <!-- Global Navigation Bar Component -->
     <Navbar />
 
-    <!-- Main Content Area (Unified background and seamless padding below navbar) -->
     <main class="m-0 pt-[90px] px-0 pb-0 bg-[var(--darker-brown)]">
         <slot />
     </main>
 
-    <!-- Global Mini Footer Component -->
     <MiniFooter />
 
-    <!-- Global Touch & Mouse Drag (Swipe) Script for all Sliders / Carousels -->
-    <script>
+    <!-- Pure JavaScript Touch & Mouse Momentum Scroll -->
+    <script is:inline>
         document.addEventListener('DOMContentLoaded', () => {
-            const sliders = document.querySelectorAll('.draggable-slider');
+            const sliders = document.querySelectorAll('.momentum-slider');
 
-            sliders.forEach((sliderContainer) => {
-                const track = sliderContainer.querySelector('.draggable-track') as HTMLElement;
-                if (!track) return;
+            sliders.forEach((slider) => {
+                let isDown = false;
+                let startX = 0;
+                let scrollLeft = 0;
 
-                let isDragging = false;
-                let startPos = 0;
-                let currentTranslate = 0;
-                let prevTranslate = 0;
-                let animationID = 0;
+                // Mouse Events
+                slider.addEventListener('mousedown', (e) => {
+                    isDown = true;
+                    slider.classList.add('cursor-grabbing');
+                    slider.classList.remove('cursor-grab');
+                    startX = e.pageX - slider.offsetLeft;
+                    scrollLeft = slider.scrollLeft;
+                });
 
-                function getPositionX(event: TouchEvent | MouseEvent): number {
-                    return 'touches' in event ? event.touches[0].clientX : event.clientX;
-                }
+                slider.addEventListener('mouseleave', () => {
+                    isDown = false;
+                    slider.classList.remove('cursor-grabbing');
+                    slider.classList.add('cursor-grab');
+                });
 
-                function touchStart(event: TouchEvent | MouseEvent) {
-                    isDragging = true;
-                    startPos = getPositionX(event);
-                    prevTranslate = currentTranslate;
-                    track.style.transition = 'none';
-                    animationID = requestAnimationFrame(animation);
-                }
+                slider.addEventListener('mouseup', () => {
+                    isDown = false;
+                    slider.classList.remove('cursor-grabbing');
+                    slider.classList.add('cursor-grab');
+                });
 
-                function touchMove(event: TouchEvent | MouseEvent) {
-                    if (!isDragging) return;
-                    const currentPosition = getPositionX(event);
-                    currentTranslate = prevTranslate + currentPosition - startPos;
-                }
+                slider.addEventListener('mousemove', (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - slider.offsetLeft;
+                    const walk = (x - startX) * 1.5;
+                    slider.scrollLeft = scrollLeft - walk;
+                });
 
-                function touchEnd() {
-                    if (!isDragging) return;
-                    isDragging = false;
-                    cancelAnimationFrame(animationID);
-                    track.style.transition = 'transform 0.5s ease-out';
-                }
+                // Touch Events for Mobile
+                let touchStartX = 0;
+                let touchScrollLeft = 0;
 
-                function animation() {
-                    if (isDragging) {
-                        track.style.transform = `translateX(${currentTranslate}px)`;
-                        animationID = requestAnimationFrame(animation);
-                    }
-                }
+                slider.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].pageX;
+                    touchScrollLeft = slider.scrollLeft;
+                }, { passive: true });
 
-                track.addEventListener('touchstart', touchStart as EventListener, { passive: true });
-                track.addEventListener('touchmove', touchMove as EventListener, { passive: true });
-                track.addEventListener('touchend', touchEnd);
+                slider.addEventListener('touchmove', (e) => {
+                    if (!touchStartX) return;
+                    const x = e.touches[0].pageX;
+                    const walk = (x - touchStartX) * 1.5;
+                    slider.scrollLeft = touchScrollLeft - walk;
+                }, { passive: true });
 
-                track.addEventListener('mousedown', touchStart as EventListener);
-                track.addEventListener('mousemove', touchMove as EventListener);
-                track.addEventListener('mouseup', touchEnd);
-                track.addEventListener('mouseleave', () => {
-                    if (isDragging) touchEnd();
+                slider.addEventListener('touchend', () => {
+                    touchStartX = 0;
                 });
             });
         });
