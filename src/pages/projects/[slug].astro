@@ -226,8 +226,21 @@ const { data } = entry;
             let lightboxStartY = 0;
             let lightboxIsHorizontal = false;
 
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchStartTime = 0;
+            let touchStartOffset = 0;
+            let touchIsHorizontal = false;
+            let isTouchDragging = false;
+
+            let lightboxTouchStartX = 0;
+            let lightboxTouchStartY = 0;
+            let lightboxTouchIsHorizontal = false;
+
             track.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 0.75, 0.25, 1)`;
             track.style.willChange = 'transform';
+
+            wrapper.style.touchAction = 'pan-y';
 
             if (modalImg) {
                 modalImg.style.touchAction = 'pan-y';
@@ -307,14 +320,42 @@ const { data } = entry;
                 track.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 0.75, 0.25, 1)`;
             }
 
-            function finishDragging(pointerId: number) {
-                if (!isDragging || pointerId !== activePointerId) return;
+            function enableClickSuppression() {
+                suppressClick = true;
 
-                const dragDistance = currentOffset - startOffset;
-                const dragDuration = Math.max(1, performance.now() - startTime);
+                if (suppressClickTimer) {
+                    clearTimeout(suppressClickTimer);
+                }
+
+                suppressClickTimer = setTimeout(() => {
+                    suppressClick = false;
+                    suppressClickTimer = null;
+                }, 350);
+            }
+
+            function applyDragOffset(deltaX: number, baseOffset: number) {
+                const maxOffset = getMaxOffset();
+                let nextOffset = baseOffset - deltaX;
+
+                if (nextOffset < 0) {
+                    nextOffset *= 0.25;
+                } else if (nextOffset > maxOffset) {
+                    nextOffset = maxOffset + (nextOffset - maxOffset) * 0.25;
+                }
+
+                currentOffset = nextOffset;
+
+                track.style.transform = `translate3d(${-currentOffset}px, 0, 0)`;
+            }
+
+            function finishTouchDrag() {
+                if (!isTouchDragging) return;
+
+                const dragDistance = currentOffset - touchStartOffset;
+                const dragDuration = Math.max(1, performance.now() - touchStartTime);
                 const finalVelocity = Math.abs(dragDistance) / dragDuration;
 
-                if (isHorizontalDrag) {
+                if (touchIsHorizontal) {
                     if (
                         Math.abs(dragDistance) >= MIN_SWIPE_DISTANCE ||
                         finalVelocity >= VELOCITY_THRESHOLD
@@ -325,34 +366,85 @@ const { data } = entry;
                         goToIndex(currentIndex);
                     }
 
-                    suppressClick = true;
-
-                    if (suppressClickTimer) {
-                        clearTimeout(suppressClickTimer);
-                    }
-
-                    suppressClickTimer = setTimeout(() => {
-                        suppressClick = false;
-                        suppressClickTimer = null;
-                    }, 350);
+                    enableClickSuppression();
                 } else {
                     goToIndex(currentIndex);
                 }
 
-                const capturedPointer = activePointerId;
-                activePointerId = null;
+                isTouchDragging = false;
+                touchIsHorizontal = false;
 
                 resetDragState();
-
-                if (
-                    capturedPointer !== null &&
-                    wrapper.hasPointerCapture(capturedPointer)
-                ) {
-                    wrapper.releasePointerCapture(capturedPointer);
-                }
             }
 
+            wrapper.addEventListener('touchstart', (event: TouchEvent) => {
+                if (event.touches.length !== 1) return;
+                if (snapPoints.length <= 1) return;
+                if ((event.target as HTMLElement).closest('button')) return;
+
+                const touch = event.touches[0];
+
+                isTouchDragging = true;
+                touchIsHorizontal = false;
+
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+                touchStartTime = performance.now();
+                touchStartOffset = currentOffset;
+
+                track.style.transition = 'none';
+            }, { passive: true });
+
+            wrapper.addEventListener('touchmove', (event: TouchEvent) => {
+                if (!isTouchDragging || event.touches.length !== 1) return;
+
+                const touch = event.touches[0];
+                const deltaX = touch.clientX - touchStartX;
+                const deltaY = touch.clientY - touchStartY;
+
+                if (!touchIsHorizontal) {
+                    if (
+                        Math.abs(deltaX) < DIRECTION_THRESHOLD &&
+                        Math.abs(deltaY) < DIRECTION_THRESHOLD
+                    ) {
+                        return;
+                    }
+
+                    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                        isTouchDragging = false;
+                        resetDragState();
+                        return;
+                    }
+
+                    touchIsHorizontal = true;
+                    isDragging = true;
+
+                    wrapper.classList.add('is-dragging');
+                }
+
+                if (event.cancelable) {
+                    event.preventDefault();
+                }
+
+                applyDragOffset(deltaX, touchStartOffset);
+            }, { passive: false });
+
+            wrapper.addEventListener('touchend', () => {
+                finishTouchDrag();
+            });
+
+            wrapper.addEventListener('touchcancel', () => {
+                if (!isTouchDragging) return;
+
+                isTouchDragging = false;
+                touchIsHorizontal = false;
+
+                resetDragState();
+                goToIndex(currentIndex);
+            });
+
             wrapper.addEventListener('pointerdown', (event: PointerEvent) => {
+                if (event.pointerType === 'touch') return;
                 if (event.pointerType === 'mouse' && event.button !== 0) return;
                 if ((event.target as HTMLElement).closest('button')) return;
                 if (snapPoints.length <= 1) return;
@@ -370,6 +462,7 @@ const { data } = entry;
             });
 
             wrapper.addEventListener('pointermove', (event: PointerEvent) => {
+                if (event.pointerType === 'touch') return;
                 if (!isDragging || event.pointerId !== activePointerId) return;
 
                 const deltaX = event.clientX - startX;
@@ -398,25 +491,52 @@ const { data } = entry;
                     event.preventDefault();
                 }
 
-                const maxOffset = getMaxOffset();
-                let nextOffset = startOffset - deltaX;
-
-                if (nextOffset < 0) {
-                    nextOffset *= 0.25;
-                } else if (nextOffset > maxOffset) {
-                    nextOffset = maxOffset + (nextOffset - maxOffset) * 0.25;
-                }
-
-                currentOffset = nextOffset;
-
-                track.style.transform = `translate3d(${-currentOffset}px, 0, 0)`;
+                applyDragOffset(deltaX, startOffset);
             });
 
+            function finishDragging(pointerId: number) {
+                if (!isDragging || pointerId !== activePointerId) return;
+
+                const dragDistance = currentOffset - startOffset;
+                const dragDuration = Math.max(1, performance.now() - startTime);
+                const finalVelocity = Math.abs(dragDistance) / dragDuration;
+
+                if (isHorizontalDrag) {
+                    if (
+                        Math.abs(dragDistance) >= MIN_SWIPE_DISTANCE ||
+                        finalVelocity >= VELOCITY_THRESHOLD
+                    ) {
+                        const direction = dragDistance > 0 ? 1 : -1;
+                        goToIndex(currentIndex + direction);
+                    } else {
+                        goToIndex(currentIndex);
+                    }
+
+                    enableClickSuppression();
+                } else {
+                    goToIndex(currentIndex);
+                }
+
+                const capturedPointer = activePointerId;
+                activePointerId = null;
+
+                resetDragState();
+
+                if (
+                    capturedPointer !== null &&
+                    wrapper.hasPointerCapture(capturedPointer)
+                ) {
+                    wrapper.releasePointerCapture(capturedPointer);
+                }
+            }
+
             wrapper.addEventListener('pointerup', (event: PointerEvent) => {
+                if (event.pointerType === 'touch') return;
                 finishDragging(event.pointerId);
             });
 
             wrapper.addEventListener('pointercancel', (event: PointerEvent) => {
+                if (event.pointerType === 'touch') return;
                 if (event.pointerId !== activePointerId) return;
 
                 const pointerId = activePointerId;
@@ -434,6 +554,7 @@ const { data } = entry;
             });
 
             wrapper.addEventListener('lostpointercapture', (event: PointerEvent) => {
+                if (event.pointerType === 'touch') return;
                 if (event.pointerId !== activePointerId) return;
 
                 activePointerId = null;
@@ -498,9 +619,65 @@ const { data } = entry;
 
                 lightboxPointerId = null;
                 lightboxIsHorizontal = false;
+                lightboxTouchIsHorizontal = false;
             }
 
+            modalImg?.addEventListener('touchstart', (event: TouchEvent) => {
+                if (event.touches.length !== 1) return;
+
+                const touch = event.touches[0];
+
+                lightboxTouchStartX = touch.clientX;
+                lightboxTouchStartY = touch.clientY;
+                lightboxTouchIsHorizontal = false;
+            }, { passive: true });
+
+            modalImg?.addEventListener('touchmove', (event: TouchEvent) => {
+                if (event.touches.length !== 1) return;
+
+                const touch = event.touches[0];
+                const deltaX = touch.clientX - lightboxTouchStartX;
+                const deltaY = touch.clientY - lightboxTouchStartY;
+
+                if (!lightboxTouchIsHorizontal) {
+                    if (Math.abs(deltaX) < 8 && Math.abs(deltaY) < 8) return;
+
+                    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                        lightboxTouchIsHorizontal = false;
+                        return;
+                    }
+
+                    lightboxTouchIsHorizontal = true;
+                }
+
+                if (event.cancelable) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+
+            modalImg?.addEventListener('touchend', (event: TouchEvent) => {
+                if (!lightboxTouchIsHorizontal) return;
+
+                const touch = event.changedTouches[0];
+                const deltaX = touch.clientX - lightboxTouchStartX;
+
+                lightboxTouchIsHorizontal = false;
+
+                if (Math.abs(deltaX) < 45) return;
+
+                if (deltaX < 0) {
+                    showLightboxImage(lightboxIndex + 1);
+                } else {
+                    showLightboxImage(lightboxIndex - 1);
+                }
+            });
+
+            modalImg?.addEventListener('touchcancel', () => {
+                lightboxTouchIsHorizontal = false;
+            });
+
             modalImg?.addEventListener('pointerdown', (event: PointerEvent) => {
+                if (event.pointerType === 'touch') return;
                 if (event.pointerType === 'mouse' && event.button !== 0) return;
 
                 lightboxPointerId = event.pointerId;
@@ -510,6 +687,7 @@ const { data } = entry;
             });
 
             modalImg?.addEventListener('pointermove', (event: PointerEvent) => {
+                if (event.pointerType === 'touch') return;
                 if (event.pointerId !== lightboxPointerId) return;
 
                 const deltaX = event.clientX - lightboxStartX;
@@ -533,6 +711,7 @@ const { data } = entry;
             });
 
             function finishLightboxSwipe(event: PointerEvent) {
+                if (event.pointerType === 'touch') return;
                 if (event.pointerId !== lightboxPointerId) return;
 
                 const deltaX = event.clientX - lightboxStartX;
@@ -552,12 +731,16 @@ const { data } = entry;
 
             modalImg?.addEventListener('pointerup', finishLightboxSwipe);
 
-            modalImg?.addEventListener('pointercancel', () => {
+            modalImg?.addEventListener('pointercancel', (event: PointerEvent) => {
+                if (event.pointerType === 'touch') return;
+
                 lightboxPointerId = null;
                 lightboxIsHorizontal = false;
             });
 
-            modalImg?.addEventListener('lostpointercapture', () => {
+            modalImg?.addEventListener('lostpointercapture', (event: PointerEvent) => {
+                if (event.pointerType === 'touch') return;
+
                 lightboxPointerId = null;
                 lightboxIsHorizontal = false;
             });
