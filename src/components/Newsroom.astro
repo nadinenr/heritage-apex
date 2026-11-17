@@ -96,8 +96,29 @@ const newsItems = await getCollection('news');
             }
         });
 
+        // منع تداخل السحب مع فتح الكارت (لو حصل سحب حقيقي ميعتبرش كليك)
+        let startX = 0;
+        let startY = 0;
+        let isMoving = false;
+
         cards.forEach((card) => {
-            card.addEventListener('click', () => {
+            card.addEventListener('pointerdown', (e: any) => {
+                startX = e.clientX;
+                startY = e.clientY;
+                isMoving = false;
+            });
+
+            card.addEventListener('pointermove', (e: any) => {
+                if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
+                    isMoving = true;
+                }
+            });
+
+            card.addEventListener('click', (e) => {
+                if (isMoving) {
+                    e.preventDefault();
+                    return;
+                }
                 card.classList.toggle('active-card');
             });
         });

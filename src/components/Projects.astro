@@ -108,6 +108,31 @@ const projects = [
             }
         });
 
+        let startX = 0;
+        let startY = 0;
+        let isMoving = false;
+
+        slides.forEach((slide) => {
+            slide.addEventListener('pointerdown', (e: any) => {
+                startX = e.clientX;
+                startY = e.clientY;
+                isMoving = false;
+            });
+
+            slide.addEventListener('pointermove', (e: any) => {
+                if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
+                    isMoving = true;
+                }
+            });
+
+            slide.addEventListener('click', (e) => {
+                if (isMoving) {
+                    e.preventDefault();
+                    return;
+                }
+            });
+        });
+
         window.addEventListener('resize', updateSlider);
         updateSlider();
     });
