@@ -26,14 +26,14 @@ const newsItems = await getCollection('news');
                     <div class="news-card w-[350px] md:w-[380px] h-[480px] shrink-0 rounded-[16px] overflow-hidden shadow-xl flex flex-col relative group border border-white/10 select-none">
                         <img src={item.data.image} alt={item.data.title} class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 pointer-events-none">
                         
-                        <div class="news-content-box absolute bottom-0 left-0 right-0 p-[30px] h-[180px] group-hover:h-[420px] bg-[var(--dark-navy)]/30 group-hover:bg-[var(--dark-navy)]/90 z-10 transition-all duration-700 ease-in-out flex flex-col justify-start overflow-hidden">
+                        <div class="news-content-box absolute bottom-0 left-0 right-0 p-[30px] h-[180px] bg-[var(--dark-navy)]/30 z-10 transition-all duration-500 ease-in-out flex flex-col justify-start overflow-hidden">
                             <span class="text-[11px] tracking-[2px] font-bold block mb-[8px] text-[var(--accent-orange)] shrink-0">
                                 {item.data.date}
                             </span>
                             <h3 class="text-[1.3rem] font-bold text-white mb-[12px] leading-snug shrink-0">
                                 {item.data.title}
                             </h3>
-                            <p class="text-gray-100 text-[0.9rem] leading-[1.7] whitespace-pre-line line-clamp-2 group-hover:line-clamp-none transition-all duration-700">
+                            <p class="text-gray-100 text-[0.9rem] leading-[1.7] whitespace-pre-line line-clamp-2 transition-all duration-500">
                                 {item.data.details}
                             </p>
                         </div>
@@ -52,8 +52,21 @@ const newsItems = await getCollection('news');
     </div>
 </section>
 
-<!-- استخدام نفس كلاسات الألوان والشفافية الأصلية للـ Tailwind للموبايل والويب -->
+<!-- التحكم في الـ Hover للويب والضغطة الواحدة للموبايل بنفس الألوان والشفافية الأصلية -->
 <style>
+    /* الويب: هوفر تلقائي بالماوس */
+    @media (min-width: 769px) {
+        .news-card:hover .news-content-box {
+            height: 420px !important;
+            background-color: rgb(var(--dark-navy-rgb, 15 23 42) / 0.9) !important;
+        }
+        .news-card:hover .news-content-box p {
+            -webkit-line-clamp: unset !important;
+            line-clamp: unset !important;
+        }
+    }
+
+    /* الموبايل: ضغطة واحدة مباشرة تفتح الكارت وتظهر الخلفية بالشفافية المطلوبة */
     @media (max-width: 768px) {
         .news-card.active-card .news-content-box {
             height: 420px !important;
@@ -248,7 +261,7 @@ const newsItems = await getCollection('news');
                     return;
                 }
 
-                // على الموبايل: بضغطة واحدة يفتح الكارت باللون والشفافية الأصلية
+                // على الموبايل: ضغطة واحدة تفتح الكارت فوراً، وضغطة ثانية تقفله
                 if (window.innerWidth <= 768) {
                     const isOpen = card.classList.contains('active-card');
                     cards.forEach(c => c.classList.remove('active-card'));
