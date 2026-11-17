@@ -7,6 +7,8 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'www.heritageapex.net',
+
   vite: {
     plugins: [tailwindcss()]
   },
