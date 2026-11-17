@@ -1,13 +1,12 @@
+
 // @ts-check
 import { defineConfig } from 'astro/config';
-
 import tailwindcss from '@tailwindcss/vite';
-
 import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'www.heritageapex.net',
+  site: 'https://www.heritageapex.net',
 
   vite: {
     plugins: [tailwindcss()]
