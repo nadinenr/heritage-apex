@@ -52,7 +52,7 @@ const newsItems = await getCollection('news');
     </div>
 </section>
 
-<!-- تفعيل الضغطة الواحدة للموبايل بنفس اللون والشفافية الأصلية للويب (/90) -->
+<!-- استخدام نفس كلاسات الألوان والشفافية الأصلية للـ Tailwind للموبايل والويب -->
 <style>
     @media (max-width: 768px) {
         .news-card.active-card .news-content-box {
@@ -248,7 +248,7 @@ const newsItems = await getCollection('news');
                     return;
                 }
 
-                // على الموبايل: بضغطة واحدة يفتح الكارت باللون والشفافية الصحيحة
+                // على الموبايل: بضغطة واحدة يفتح الكارت باللون والشفافية الأصلية
                 if (window.innerWidth <= 768) {
                     const isOpen = card.classList.contains('active-card');
                     cards.forEach(c => c.classList.remove('active-card'));
