@@ -115,10 +115,11 @@ const projects = [
             track.querySelectorAll<HTMLElement>('.project-slide')
         );
 
-        const ANIMATION_DURATION = 420;
-        const DIRECTION_THRESHOLD = 8;
-        const MIN_SWIPE_DISTANCE = 35;
-        const VELOCITY_THRESHOLD = 0.35;
+        const GAP = 35;
+        const ANIMATION_DURATION = 380;
+        const DIRECTION_THRESHOLD = 6;
+        const MIN_SWIPE_DISTANCE = 25;
+        const VELOCITY_THRESHOLD = 0.15;
 
         let currentIndex = 0;
         let startX = 0;
@@ -131,11 +132,14 @@ const projects = [
         let isHorizontalGesture = false;
         let activePointerId: number | null = null;
         let suppressClick = false;
-        let clickResetTimer: number | undefined;
-
         let snapPoints: number[] = [];
 
-        wrapper.style.touchAction = 'pan-y';
+        let clickResetTimer: number | undefined;
+
+        function getCardStep() {
+            if (!slides.length) return 0;
+            return slides[0].offsetWidth + GAP;
+        }
 
         function getMaxOffset() {
             return Math.max(0, track.scrollWidth - wrapper.clientWidth);
@@ -144,17 +148,15 @@ const projects = [
         function buildSnapPoints() {
             const maxOffset = getMaxOffset();
 
-            const points = slides.map((slide) =>
-                Math.min(slide.offsetLeft, maxOffset)
-            );
+            snapPoints = slides.map((slide) => {
+                return Math.min(slide.offsetLeft, maxOffset);
+            });
 
-            snapPoints = points.filter((point, index) =>
-                index === 0 || point > points[index - 1] + 1
-            );
+            snapPoints = snapPoints.filter((point, index) => {
+                return index === 0 || point > snapPoints[index - 1] + 1;
+            });
 
-            if (!snapPoints.length) {
-                snapPoints = [0];
-            }
+            if (!snapPoints.length) snapPoints = [0];
 
             currentIndex = Math.min(currentIndex, snapPoints.length - 1);
             currentOffset = snapPoints[currentIndex];
@@ -193,63 +195,41 @@ const projects = [
             updateProgress();
         }
 
-        function resetDragState() {
-            isDragging = false;
-            isHorizontalGesture = false;
-            activePointerId = null;
-
-            wrapper.classList.remove('is-dragging');
-        }
-
-        function finishDragging(cancelled = false) {
+        function finishDragging() {
             if (!isDragging) return;
 
-            const wasHorizontal = isHorizontalGesture;
-            const pointerId = activePointerId;
+            isDragging = false;
+            activePointerId = null;
+            wrapper.classList.remove('is-dragging');
 
-            const deltaX = startX - lastPointerX;
-            const dragDuration = Math.max(
-                1,
-                performance.now() - startTime
-            );
+            const dragDistance = currentOffset - startOffset;
+            const dragDuration = Math.max(1, performance.now() - startTime);
+            const velocity = Math.abs(dragDistance) / dragDuration;
 
-            const distance = Math.abs(deltaX);
-            const velocity = distance / dragDuration;
+            if (isHorizontalGesture) {
+                if (
+                    Math.abs(dragDistance) >= MIN_SWIPE_DISTANCE ||
+                    velocity >= VELOCITY_THRESHOLD
+                ) {
+                    const direction = dragDistance > 0 ? 1 : -1;
+                    moveToIndex(currentIndex + direction);
+                } else {
+                    moveToIndex(currentIndex);
+                }
 
-            resetDragState();
-
-            if (pointerId !== null && wrapper.hasPointerCapture(pointerId)) {
-                wrapper.releasePointerCapture(pointerId);
-            }
-
-            if (cancelled || !wasHorizontal) {
-                moveToIndex(currentIndex);
-                return;
-            }
-
-            const shouldMove =
-                distance >= MIN_SWIPE_DISTANCE ||
-                (distance >= DIRECTION_THRESHOLD && velocity >= VELOCITY_THRESHOLD);
-
-            if (shouldMove) {
-                const direction = deltaX > 0 ? 1 : -1;
-                moveToIndex(currentIndex + direction);
-            } else {
-                moveToIndex(currentIndex);
-            }
-
-            if (distance >= DIRECTION_THRESHOLD) {
                 suppressClick = true;
 
                 window.clearTimeout(clickResetTimer);
 
                 clickResetTimer = window.setTimeout(() => {
                     suppressClick = false;
-                }, 250);
+                }, 150);
+            } else {
+                moveToIndex(currentIndex);
             }
-        }
 
-        let lastPointerX = 0;
+            isHorizontalGesture = false;
+        }
 
         wrapper.addEventListener('pointerdown', (event: PointerEvent) => {
             if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -262,8 +242,6 @@ const projects = [
 
             startX = event.clientX;
             startY = event.clientY;
-            lastPointerX = event.clientX;
-
             startTime = performance.now();
             startOffset = currentOffset;
 
@@ -277,18 +255,13 @@ const projects = [
             const deltaX = event.clientX - startX;
             const deltaY = event.clientY - startY;
 
-            lastPointerX = event.clientX;
-
             if (!isHorizontalGesture) {
-                if (
-                    Math.abs(deltaX) < DIRECTION_THRESHOLD &&
-                    Math.abs(deltaY) < DIRECTION_THRESHOLD
-                ) {
-                    return;
-                }
+                if (Math.abs(deltaX) < 6 && Math.abs(deltaY) < 6) return;
 
                 if (Math.abs(deltaY) > Math.abs(deltaX)) {
-                    resetDragState();
+                    isDragging = false;
+                    activePointerId = null;
+                    wrapper.classList.remove('is-dragging');
                     return;
                 }
 
@@ -302,7 +275,7 @@ const projects = [
             let nextOffset = startOffset - deltaX;
 
             if (nextOffset < 0) {
-                nextOffset *= 0.25;
+                nextOffset = nextOffset * 0.25;
             } else if (nextOffset > maxOffset) {
                 nextOffset = maxOffset + (nextOffset - maxOffset) * 0.25;
             }
@@ -317,15 +290,12 @@ const projects = [
             finishDragging();
         });
 
-        wrapper.addEventListener('pointercancel', (event: PointerEvent) => {
-            if (event.pointerId !== activePointerId) return;
-            finishDragging(true);
+        wrapper.addEventListener('pointercancel', () => {
+            finishDragging();
         });
 
-        wrapper.addEventListener('lostpointercapture', (event: PointerEvent) => {
-            if (event.pointerId === activePointerId && isDragging) {
-                finishDragging(true);
-            }
+        wrapper.addEventListener('lostpointercapture', () => {
+            if (isDragging) finishDragging();
         });
 
         slides.forEach((slide) => {

@@ -1,3 +1,4 @@
+
 ---
 /**
  * Layout Component: Main Site Template
@@ -12,7 +13,7 @@ interface Props {
     image?: string;
 }
 
-const { 
+const {
     title = "HERITAGE APEX | Architecture & Interiors",
     description = "Where Experience Meets Creativity in Architecture and Interior Design.",
     image = "/images/about-2.jpg"
@@ -30,13 +31,14 @@ const {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         html {
             overflow-x: hidden;
             overflow-y: auto;
             -webkit-text-size-adjust: 100%;
         }
+
         body {
             overflow-x: hidden;
             overflow-y: auto;
@@ -45,11 +47,13 @@ const {
             display: flex;
             flex-direction: column;
         }
+
         main {
             flex: 1;
         }
     </style>
 </head>
+
 <body class="bg-[var(--darker-brown)] text-white antialiased m-0 p-0 selection:bg-orange-500 selection:text-white">
 
     <Navbar />
@@ -60,66 +64,5 @@ const {
 
     <MiniFooter />
 
-    <!-- Pure JavaScript Touch & Mouse Momentum Scroll -->
-    <script is:inline>
-        document.addEventListener('DOMContentLoaded', () => {
-            const sliders = document.querySelectorAll('.momentum-slider');
-
-            sliders.forEach((slider) => {
-                let isDown = false;
-                let startX = 0;
-                let scrollLeft = 0;
-
-                // Mouse Events
-                slider.addEventListener('mousedown', (e) => {
-                    isDown = true;
-                    slider.classList.add('cursor-grabbing');
-                    slider.classList.remove('cursor-grab');
-                    startX = e.pageX - slider.offsetLeft;
-                    scrollLeft = slider.scrollLeft;
-                });
-
-                slider.addEventListener('mouseleave', () => {
-                    isDown = false;
-                    slider.classList.remove('cursor-grabbing');
-                    slider.classList.add('cursor-grab');
-                });
-
-                slider.addEventListener('mouseup', () => {
-                    isDown = false;
-                    slider.classList.remove('cursor-grabbing');
-                    slider.classList.add('cursor-grab');
-                });
-
-                slider.addEventListener('mousemove', (e) => {
-                    if (!isDown) return;
-                    e.preventDefault();
-                    const x = e.pageX - slider.offsetLeft;
-                    const walk = (x - startX) * 1.5;
-                    slider.scrollLeft = scrollLeft - walk;
-                });
-
-                // Touch Events for Mobile
-                let touchStartX = 0;
-                let touchScrollLeft = 0;
-
-                slider.addEventListener('touchstart', (e) => {
-                    touchStartX = e.touches[0].pageX;
-                    touchScrollLeft = slider.scrollLeft;
-                }, { passive: true });
-
-                slider.addEventListener('touchmove', (e) => {
-                    if (!touchStartX) return;
-                    const x = e.touches[0].pageX;
-                    const walk = (x - touchStartX) * 1.5;
-                    slider.scrollLeft = touchScrollLeft - walk;
-                }, { passive: true });
-
-                slider.addEventListener('touchend', () => {
-                    touchStartX = 0;
-                });
-            });
-        });
-    </script>
 </body>
 </html>

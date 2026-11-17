@@ -1,3 +1,4 @@
+
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
@@ -38,11 +39,11 @@ const commercialProjects = allProjects
 
             <div
                 id="sliderWrapper"
-                class="drag-slider-wrapper relative w-full pb-4 overflow-hidden"
+                class="drag-slider-wrapper relative w-full pb-4"
             >
                 <div
                     id="slider-track"
-                    class="drag-slider-track flex gap-[35px] w-max pt-5 cursor-grab mx-auto"
+                    class="drag-slider-track flex gap-[35px] w-max pt-5 cursor-grab"
                 >
                     {commercialProjects.map((project) => (
                         <a
@@ -118,15 +119,14 @@ const commercialProjects = allProjects
                 track.querySelectorAll<HTMLElement>('.commercial-slide')
             );
 
-            const ANIMATION_DURATION = 420;
-            const DIRECTION_THRESHOLD = 8;
-            const MIN_SWIPE_DISTANCE = 35;
-            const VELOCITY_THRESHOLD = 0.35;
+            const GAP = 35;
+            const ANIMATION_DURATION = 380;
+            const MIN_SWIPE_DISTANCE = 25;
+            const VELOCITY_THRESHOLD = 0.15;
 
             let currentIndex = 0;
             let startX = 0;
             let startY = 0;
-            let lastPointerX = 0;
             let startTime = 0;
             let startOffset = 0;
             let currentOffset = 0;
@@ -146,13 +146,13 @@ const commercialProjects = allProjects
             function buildSnapPoints() {
                 const maxOffset = getMaxOffset();
 
-                const points = cards.map(card =>
-                    Math.min(card.offsetLeft, maxOffset)
-                );
+                snapPoints = cards.map(card => {
+                    return Math.min(card.offsetLeft, maxOffset);
+                });
 
-                snapPoints = points.filter((point, index) =>
-                    index === 0 || point > points[index - 1] + 1
-                );
+                snapPoints = snapPoints.filter((point, index) => {
+                    return index === 0 || point > snapPoints[index - 1] + 1;
+                });
 
                 if (!snapPoints.length) {
                     snapPoints = [0];
@@ -195,53 +195,29 @@ const commercialProjects = allProjects
                 updateProgress();
             }
 
-            function resetDragState() {
+            function finishDragging() {
+                if (!isDragging) return;
+
                 isDragging = false;
-                isHorizontalGesture = false;
                 activePointerId = null;
 
                 wrapper.classList.remove('is-dragging');
-            }
 
-            function finishDragging(cancelled = false) {
-                if (!isDragging) return;
+                const dragDistance = currentOffset - startOffset;
+                const dragDuration = Math.max(1, performance.now() - startTime);
+                const velocity = Math.abs(dragDistance) / dragDuration;
 
-                const pointerId = activePointerId;
-                const wasHorizontal = isHorizontalGesture;
-
-                const deltaX = startX - lastPointerX;
-                const distance = Math.abs(deltaX);
-                const duration = Math.max(1, performance.now() - startTime);
-                const velocity = distance / duration;
-
-                resetDragState();
-
-                if (
-                    pointerId !== null &&
-                    wrapper.hasPointerCapture(pointerId)
-                ) {
-                    wrapper.releasePointerCapture(pointerId);
-                }
-
-                if (cancelled || !wasHorizontal) {
-                    moveToIndex(currentIndex);
-                    return;
-                }
-
-                const shouldMove =
-                    distance >= MIN_SWIPE_DISTANCE ||
-                    (
-                        distance >= DIRECTION_THRESHOLD &&
+                if (isHorizontalGesture) {
+                    if (
+                        Math.abs(dragDistance) >= MIN_SWIPE_DISTANCE ||
                         velocity >= VELOCITY_THRESHOLD
-                    );
+                    ) {
+                        const direction = dragDistance > 0 ? 1 : -1;
+                        moveToIndex(currentIndex + direction);
+                    } else {
+                        moveToIndex(currentIndex);
+                    }
 
-                if (shouldMove) {
-                    moveToIndex(currentIndex + (deltaX > 0 ? 1 : -1));
-                } else {
-                    moveToIndex(currentIndex);
-                }
-
-                if (distance >= DIRECTION_THRESHOLD) {
                     suppressClick = true;
 
                     window.clearTimeout(clickResetTimer);
@@ -249,7 +225,11 @@ const commercialProjects = allProjects
                     clickResetTimer = window.setTimeout(() => {
                         suppressClick = false;
                     }, 250);
+                } else {
+                    moveToIndex(currentIndex);
                 }
+
+                isHorizontalGesture = false;
             }
 
             wrapper.addEventListener('pointerdown', (event: PointerEvent) => {
@@ -262,11 +242,11 @@ const commercialProjects = allProjects
 
                 startX = event.clientX;
                 startY = event.clientY;
-                lastPointerX = event.clientX;
                 startTime = performance.now();
                 startOffset = currentOffset;
 
                 track.style.transition = 'none';
+
                 wrapper.classList.add('is-dragging');
             });
 
@@ -276,18 +256,13 @@ const commercialProjects = allProjects
                 const deltaX = event.clientX - startX;
                 const deltaY = event.clientY - startY;
 
-                lastPointerX = event.clientX;
-
                 if (!isHorizontalGesture) {
-                    if (
-                        Math.abs(deltaX) < DIRECTION_THRESHOLD &&
-                        Math.abs(deltaY) < DIRECTION_THRESHOLD
-                    ) {
-                        return;
-                    }
+                    if (Math.abs(deltaX) < 6 && Math.abs(deltaY) < 6) return;
 
                     if (Math.abs(deltaY) > Math.abs(deltaX)) {
-                        resetDragState();
+                        isDragging = false;
+                        activePointerId = null;
+                        wrapper.classList.remove('is-dragging');
                         return;
                     }
 
@@ -318,12 +293,12 @@ const commercialProjects = allProjects
 
             wrapper.addEventListener('pointercancel', (event: PointerEvent) => {
                 if (event.pointerId !== activePointerId) return;
-                finishDragging(true);
+                finishDragging();
             });
 
             wrapper.addEventListener('lostpointercapture', (event: PointerEvent) => {
                 if (event.pointerId === activePointerId && isDragging) {
-                    finishDragging(true);
+                    finishDragging();
                 }
             });
 

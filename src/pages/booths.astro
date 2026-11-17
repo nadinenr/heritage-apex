@@ -1,3 +1,4 @@
+
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
@@ -31,8 +32,8 @@ const boothProjects = allProjects
                 <h1 class="text-[2.5rem] md:text-[3.5rem] font-extrabold leading-tight text-white">Exhibition Booths</h1>
             </div>
 
-            <div id="sliderWrapper" class="drag-slider-wrapper relative w-full pb-4 overflow-hidden">
-                <div id="slider-track" class="drag-slider-track flex gap-[35px] w-max pt-5 cursor-grab mx-auto">
+            <div id="sliderWrapper" class="drag-slider-wrapper relative w-full pb-4">
+                <div id="slider-track" class="drag-slider-track flex gap-[35px] w-max pt-5 cursor-grab">
                     {boothProjects.map((project) => (
                         <a
                             href={`/projects/${project.id}`}
@@ -91,10 +92,10 @@ const boothProjects = allProjects
                 return;
             }
 
-            const ANIMATION_DURATION = 420;
-            const MIN_SWIPE_DISTANCE = 35;
-            const VELOCITY_THRESHOLD = 0.35;
-            const DIRECTION_THRESHOLD = 8;
+            const ANIMATION_DURATION = 380;
+            const MIN_SWIPE_DISTANCE = 25;
+            const VELOCITY_THRESHOLD = 0.15;
+            const DIRECTION_THRESHOLD = 6;
 
             let snapPoints = [];
             let currentIndex = 0;
@@ -103,25 +104,29 @@ const boothProjects = allProjects
             let isDragging = false;
             let isHorizontalDrag = false;
             let activePointerId = null;
+
             let startX = 0;
             let startY = 0;
             let startOffset = 0;
-            let lastX = 0;
-            let lastTime = 0;
-            let velocity = 0;
-            let suppressClick = false;
-            let animationFrame = null;
+            let startTime = 0;
 
-            track.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+            let suppressClick = false;
+            let clickResetTimer;
+
+            track.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 0.75, 0.25, 1)`;
 
             function getMaxOffset() {
                 return Math.max(0, track.scrollWidth - wrapper.clientWidth);
             }
 
             function buildSnapPoints() {
+                const maxOffset = getMaxOffset();
+
                 snapPoints = cards.map(card => {
-                    const targetOffset = card.offsetLeft - (wrapper.clientWidth - card.offsetWidth) / 2;
-                    return Math.max(0, Math.min(targetOffset, getMaxOffset()));
+                    const targetOffset =
+                        card.offsetLeft - (wrapper.clientWidth - card.offsetWidth) / 2;
+
+                    return Math.max(0, Math.min(targetOffset, maxOffset));
                 });
 
                 snapPoints = snapPoints.filter((point, index) =>
@@ -134,17 +139,13 @@ const boothProjects = allProjects
 
                 currentIndex = Math.min(currentIndex, snapPoints.length - 1);
                 currentOffset = snapPoints[currentIndex];
+
                 updatePosition(false);
             }
 
             function updatePosition(animate = true) {
-                if (animationFrame) {
-                    cancelAnimationFrame(animationFrame);
-                    animationFrame = null;
-                }
-
                 track.style.transition = animate
-                    ? `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`
+                    ? `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 0.75, 0.25, 1)`
                     : 'none';
 
                 track.style.transform = `translate3d(${-currentOffset}px, 0, 0)`;
@@ -154,71 +155,85 @@ const boothProjects = allProjects
 
             function updateControls() {
                 const total = snapPoints.length;
+
                 const progress = total > 1
-                    ? (currentIndex / (total - 1)) * 100
+                    ? ((currentIndex + 1) / total) * 100
                     : 100;
 
                 progressBar.style.width = `${progress}%`;
 
-                prevBtn.style.opacity = currentIndex <= 0 ? '0.4' : '1';
+                prevBtn.style.opacity = currentIndex === 0 ? '0.4' : '1';
                 nextBtn.style.opacity = currentIndex >= total - 1 ? '0.4' : '1';
 
-                prevBtn.style.pointerEvents = currentIndex <= 0 ? 'none' : 'auto';
-                nextBtn.style.pointerEvents = currentIndex >= total - 1 ? 'none' : 'auto';
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex >= total - 1;
             }
 
             function goToIndex(index, animate = true) {
-                currentIndex = Math.max(0, Math.min(index, snapPoints.length - 1));
+                currentIndex = Math.max(
+                    0,
+                    Math.min(index, snapPoints.length - 1)
+                );
+
                 currentOffset = snapPoints[currentIndex];
+
                 updatePosition(animate);
             }
 
             function resetDragState() {
                 isDragging = false;
                 isHorizontalDrag = false;
+                activePointerId = null;
+
                 wrapper.classList.remove('is-dragging');
-                track.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`;
             }
 
-            function finishDragging(pointerId, event) {
-                if (!isDragging || pointerId !== activePointerId) return;
+            function finishDragging() {
+                if (!isDragging) return;
+
+                const dragDistance = currentOffset - startOffset;
+                const dragDuration = Math.max(1, performance.now() - startTime);
+                const velocity = Math.abs(dragDistance) / dragDuration;
 
                 const wasHorizontalDrag = isHorizontalDrag;
-                const distance = startX - (event?.clientX ?? lastX);
-                const finalVelocity = Math.abs(velocity);
+                const pointerId = activePointerId;
+
+                resetDragState();
+
+                if (
+                    pointerId !== null &&
+                    wrapper.hasPointerCapture(pointerId)
+                ) {
+                    wrapper.releasePointerCapture(pointerId);
+                }
 
                 if (wasHorizontalDrag) {
-                    suppressClick = true;
-
-                    if (distance > MIN_SWIPE_DISTANCE || (distance > 10 && finalVelocity > VELOCITY_THRESHOLD)) {
-                        goToIndex(currentIndex + 1);
-                    } else if (distance < -MIN_SWIPE_DISTANCE || (distance < -10 && finalVelocity > VELOCITY_THRESHOLD)) {
-                        goToIndex(currentIndex - 1);
+                    if (
+                        Math.abs(dragDistance) >= MIN_SWIPE_DISTANCE ||
+                        velocity >= VELOCITY_THRESHOLD
+                    ) {
+                        const direction = dragDistance > 0 ? 1 : -1;
+                        goToIndex(currentIndex + direction);
                     } else {
                         goToIndex(currentIndex);
                     }
+
+                    suppressClick = true;
+
+                    window.clearTimeout(clickResetTimer);
+
+                    clickResetTimer = window.setTimeout(() => {
+                        suppressClick = false;
+                    }, 150);
                 } else {
                     goToIndex(currentIndex);
-                }
-
-                const capturedPointer = activePointerId;
-                activePointerId = null;
-                resetDragState();
-
-                if (capturedPointer !== null && wrapper.hasPointerCapture(capturedPointer)) {
-                    wrapper.releasePointerCapture(capturedPointer);
-                }
-
-                if (suppressClick) {
-                    setTimeout(() => {
-                        suppressClick = false;
-                    }, 350);
                 }
             }
 
             wrapper.addEventListener('pointerdown', (event) => {
                 if (event.pointerType === 'mouse' && event.button !== 0) return;
                 if (event.target.closest('button')) return;
+                if (snapPoints.length <= 1 || isDragging) return;
 
                 isDragging = true;
                 isHorizontalDrag = false;
@@ -226,12 +241,11 @@ const boothProjects = allProjects
 
                 startX = event.clientX;
                 startY = event.clientY;
-                lastX = event.clientX;
-                lastTime = performance.now();
+                startTime = performance.now();
                 startOffset = currentOffset;
-                velocity = 0;
 
                 track.style.transition = 'none';
+                wrapper.classList.add('is-dragging');
             });
 
             wrapper.addEventListener('pointermove', (event) => {
@@ -241,63 +255,60 @@ const boothProjects = allProjects
                 const deltaY = event.clientY - startY;
 
                 if (!isHorizontalDrag) {
-                    if (Math.abs(deltaX) < DIRECTION_THRESHOLD && Math.abs(deltaY) < DIRECTION_THRESHOLD) return;
+                    if (Math.abs(deltaX) < DIRECTION_THRESHOLD && Math.abs(deltaY) < DIRECTION_THRESHOLD) {
+                        return;
+                    }
 
                     if (Math.abs(deltaY) > Math.abs(deltaX)) {
-                        const pointerId = activePointerId;
-                        activePointerId = null;
                         resetDragState();
-
-                        if (wrapper.hasPointerCapture(pointerId)) {
-                            wrapper.releasePointerCapture(pointerId);
-                        }
                         return;
                     }
 
                     isHorizontalDrag = true;
-                    wrapper.classList.add('is-dragging');
                     wrapper.setPointerCapture(event.pointerId);
                 }
 
-                if (event.cancelable) event.preventDefault();
-
-                const now = performance.now();
-                const timeDelta = Math.max(1, now - lastTime);
-                velocity = (event.clientX - lastX) / timeDelta;
-
-                lastX = event.clientX;
-                lastTime = now;
+                if (event.cancelable) {
+                    event.preventDefault();
+                }
 
                 const maxOffset = getMaxOffset();
-                const nextOffset = startOffset - deltaX;
+                let nextOffset = startOffset - deltaX;
 
-                currentOffset = Math.max(0, Math.min(nextOffset, maxOffset));
+                if (nextOffset < 0) {
+                    nextOffset *= 0.25;
+                } else if (nextOffset > maxOffset) {
+                    nextOffset = maxOffset + (nextOffset - maxOffset) * 0.25;
+                }
+
+                currentOffset = nextOffset;
+
                 track.style.transform = `translate3d(${-currentOffset}px, 0, 0)`;
             });
 
             wrapper.addEventListener('pointerup', (event) => {
-                finishDragging(event.pointerId, event);
+                if (event.pointerId !== activePointerId) return;
+                finishDragging();
             });
 
             wrapper.addEventListener('pointercancel', (event) => {
                 if (event.pointerId !== activePointerId) return;
-                activePointerId = null;
-                resetDragState();
-                goToIndex(currentIndex);
+                finishDragging();
             });
 
             wrapper.addEventListener('lostpointercapture', (event) => {
-                if (event.pointerId !== activePointerId) return;
-                activePointerId = null;
-                resetDragState();
-                goToIndex(currentIndex);
+                if (event.pointerId === activePointerId && isDragging) {
+                    finishDragging();
+                }
             });
 
             wrapper.addEventListener('click', (event) => {
                 if (suppressClick) {
                     event.preventDefault();
                     event.stopPropagation();
+
                     suppressClick = false;
+                    window.clearTimeout(clickResetTimer);
                 }
             }, true);
 
@@ -314,8 +325,10 @@ const boothProjects = allProjects
             });
 
             let resizeTimer;
+
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimer);
+
                 resizeTimer = setTimeout(() => {
                     buildSnapPoints();
                 }, 100);
