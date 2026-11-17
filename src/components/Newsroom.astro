@@ -5,7 +5,7 @@ const newsItems = await getCollection('news');
 ---
 
 <section class="newsroom-section py-[120px] px-[8%] bg-[var(--dark-navy)] relative overflow-hidden" id="newsroom">
-    <div 
+    <div
         class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-5 mix-blend-luminosity pointer-events-none"
         style="background-image: url('/images/background.jpg');"
     ></div>
@@ -36,15 +36,15 @@ const newsItems = await getCollection('news');
                             alt={item.data.title}
                             class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 pointer-events-none"
                         >
-                        
-                        <div class="news-content-box absolute bottom-0 left-0 right-0 p-[30px] h-[180px] group-hover:h-[420px] bg-[var(--dark-navy)]/30 group-hover:bg-[var(--dark-navy)]/90 z-10 transition-all duration-700 ease-in-out flex flex-col justify-start overflow-hidden">
+
+                        <div class="news-content-box absolute bottom-0 left-0 right-0 p-[30px] h-[180px] bg-[var(--dark-navy)]/30 z-10 transition-all duration-700 ease-in-out flex flex-col justify-start overflow-hidden">
                             <span class="text-[11px] tracking-[2px] font-bold block mb-[8px] text-[var(--accent-orange)] shrink-0">
                                 {item.data.date}
                             </span>
                             <h3 class="text-[1.3rem] font-bold text-white mb-[12px] leading-snug shrink-0">
                                 {item.data.title}
                             </h3>
-                            <p class="text-gray-100 text-[0.9rem] leading-[1.7] whitespace-pre-line line-clamp-2 group-hover:line-clamp-none transition-all duration-700">
+                            <p class="text-gray-100 text-[0.9rem] leading-[1.7] whitespace-pre-line line-clamp-2">
                                 {item.data.details}
                             </p>
                         </div>
@@ -62,6 +62,44 @@ const newsItems = await getCollection('news');
         </div>
     </div>
 </section>
+
+<style>
+    @media (hover: hover) and (pointer: fine) {
+        .news-card:hover .news-content-box {
+            height: 420px;
+            background-color: var(--dark-navy);
+        }
+
+        .news-card:hover .news-content-box p {
+            -webkit-line-clamp: unset;
+            overflow: visible;
+        }
+    }
+
+    @media (hover: none) {
+        .news-card .news-content-box {
+            height: 180px;
+            background-color: rgb(15 23 42 / 30%);
+        }
+
+        .news-card .news-content-box p {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .news-card.active-card .news-content-box {
+            height: 420px !important;
+            background-color: var(--dark-navy) !important;
+        }
+
+        .news-card.active-card .news-content-box p {
+            -webkit-line-clamp: unset;
+            overflow: visible;
+        }
+    }
+</style>
 
 <script>
     const wrapper = document.getElementById('newsSliderWrapper') as HTMLElement;
@@ -89,6 +127,8 @@ const newsItems = await getCollection('news');
         let activePointerId: number | null = null;
         let suppressClick = false;
         let snapPoints: number[] = [];
+
+        const isTouchDevice = window.matchMedia('(hover: none)').matches;
 
         function getCardStep() {
             if (!cards.length) return 0;
@@ -176,6 +216,7 @@ const newsItems = await getCollection('news');
         }
 
         wrapper.addEventListener('pointerdown', (event: PointerEvent) => {
+            if (event.pointerType === 'touch') return;
             if (event.pointerType === 'mouse' && event.button !== 0) return;
             if (snapPoints.length <= 1) return;
 
@@ -193,6 +234,7 @@ const newsItems = await getCollection('news');
         });
 
         wrapper.addEventListener('pointermove', (event: PointerEvent) => {
+            if (event.pointerType === 'touch') return;
             if (!isDragging || event.pointerId !== activePointerId) return;
 
             const deltaX = event.clientX - startX;
@@ -248,7 +290,15 @@ const newsItems = await getCollection('news');
                     return;
                 }
 
-                card.classList.toggle('active-card');
+                if (!isTouchDevice) return;
+
+                cards.forEach((otherCard) => {
+                    if (otherCard !== card) {
+                        otherCard.classList.remove('active-card');
+                    }
+                });
+
+                card.classList.add('active-card');
             });
         });
 
