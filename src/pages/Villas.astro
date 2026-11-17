@@ -1,10 +1,8 @@
-
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 
 const allProjects = await getCollection('projects');
-
 const villaProjects = allProjects
     .filter(project => {
         const cat = project.data.category?.toUpperCase();
@@ -42,17 +40,17 @@ const villaProjects = allProjects
 
             <div
                 id="sliderWrapper"
-                class="relative overflow-hidden w-full pb-4 touch-pan-y"
+                class="drag-slider-wrapper relative w-full pb-4 overflow-hidden"
             >
                 <div
                     id="slider-track"
-                    class="flex gap-[35px] w-max pt-5 cursor-grab"
+                    class="drag-slider-track flex gap-[35px] w-max pt-5 cursor-grab mx-auto"
                 >
                     {villaProjects.map((project) => (
                         <a
                             href={`/projects/${project.id}`}
                             draggable="false"
-                            class="villa-slide group w-[350px] md:w-[380px] bg-[#352f2a]/90 backdrop-blur-sm rounded-[10px] overflow-hidden shadow-lg no-underline shrink-0 transition-transform duration-300 hover:-translate-y-2 border border-white/10 select-none"
+                            class="villa-slide drag-slider-item group w-[350px] md:w-[380px] bg-[#352f2a]/90 backdrop-blur-sm rounded-[10px] overflow-hidden shadow-lg no-underline shrink-0 transition-transform duration-300 hover:-translate-y-2 border border-white/10 select-none"
                         >
                             <div class="w-full h-[220px] sm:h-[240px] overflow-hidden pointer-events-none">
                                 <img
@@ -143,8 +141,6 @@ const villaProjects = allProjects
 
             let snapPoints: number[] = [];
 
-            wrapper.style.touchAction = 'pan-y';
-
             function getMaxOffset() {
                 return Math.max(0, track.scrollWidth - wrapper.clientWidth);
             }
@@ -152,12 +148,13 @@ const villaProjects = allProjects
             function buildSnapPoints() {
                 const maxOffset = getMaxOffset();
 
-                const points = cards.map(card =>
-                    Math.min(card.offsetLeft, maxOffset)
-                );
+                snapPoints = cards.map(card => {
+                    const targetOffset = card.offsetLeft - (wrapper.clientWidth - card.offsetWidth) / 2;
+                    return Math.max(0, Math.min(targetOffset, maxOffset));
+                });
 
-                snapPoints = points.filter((point, index) =>
-                    index === 0 || point > points[index - 1] + 1
+                snapPoints = snapPoints.filter((point, index) =>
+                    index === 0 || point > snapPoints[index - 1] + 1
                 );
 
                 if (!snapPoints.length) {
@@ -172,16 +169,16 @@ const villaProjects = allProjects
                 const total = snapPoints.length;
 
                 const progress = total > 1
-                    ? ((currentIndex + 1) / total) * 100
+                    ? (currentIndex / (total - 1)) * 100
                     : 100;
 
                 progressBar.style.width = `${progress}%`;
 
-                prevBtn.style.opacity = currentIndex === 0 ? '0.4' : '1';
+                prevBtn.style.opacity = currentIndex <= 0 ? '0.4' : '1';
                 nextBtn.style.opacity = currentIndex >= total - 1 ? '0.4' : '1';
 
-                prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex >= total - 1;
+                prevBtn.style.pointerEvents = currentIndex <= 0 ? 'none' : 'auto';
+                nextBtn.style.pointerEvents = currentIndex >= total - 1 ? 'none' : 'auto';
             }
 
             function moveToIndex(index: number, smooth = true) {
@@ -260,6 +257,7 @@ const villaProjects = allProjects
 
             wrapper.addEventListener('pointerdown', (event: PointerEvent) => {
                 if (event.pointerType === 'mouse' && event.button !== 0) return;
+                if (event.target instanceof HTMLElement && event.target.closest('button')) return;
                 if (snapPoints.length <= 1 || isDragging) return;
 
                 isDragging = true;
@@ -301,7 +299,7 @@ const villaProjects = allProjects
                     wrapper.setPointerCapture(event.pointerId);
                 }
 
-                event.preventDefault();
+                if (event.cancelable) event.preventDefault();
 
                 const maxOffset = getMaxOffset();
                 let nextOffset = startOffset - deltaX;
@@ -366,7 +364,13 @@ const villaProjects = allProjects
                 moveToIndex(currentIndex, false);
             }
 
-            window.addEventListener('resize', refreshSlider);
+            let resizeTimer: number;
+            window.addEventListener('resize', () => {
+                window.clearTimeout(resizeTimer);
+                resizeTimer = window.setTimeout(() => {
+                    refreshSlider();
+                }, 100);
+            });
 
             refreshSlider();
         }

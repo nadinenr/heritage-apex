@@ -914,25 +914,31 @@
   }
 
 
-  #newsSliderWrapper {
+  /* Shared Slider Styles */
+
+  .drag-slider-wrapper {
     touch-action: pan-y;
     cursor: grab;
     overflow: hidden;
   }
 
-  #newsSliderWrapper.is-dragging {
+  .drag-slider-wrapper.is-dragging {
     cursor: grabbing;
     user-select: none;
+    -webkit-user-select: none;
   }
 
-  #newsTrack {
+  .drag-slider-track {
     will-change: transform;
   }
 
-  .news-card img {
+  .drag-slider-item img {
     -webkit-user-drag: none;
     user-select: none;
+    -webkit-user-select: none;
   }
+
+  /* Newsroom Specific Styles */
 
   @media (hover: none) {
     .news-card.active-card .news-content-box {
@@ -948,8 +954,10 @@
     }
   }
 
+  /* Reduced Motion */
+
   @media (prefers-reduced-motion: reduce) {
-    #newsTrack {
+    .drag-slider-track {
       transition-duration: 0ms !important;
     }
   }

@@ -64,20 +64,19 @@
                 }
             });
 
-            // Handle mobile tap logic: First tap activates the panel, second tap navigates to the link
+            // Handle mobile tap logic to act precisely as hover (Single Tap switches active panel & background)
             panel.addEventListener('click', (e) => {
                 if (window.innerWidth <= 768) {
-                    if (!panel.classList.contains('active')) {
-                        e.preventDefault(); // Prevent navigation on the first tap
-                        panels.forEach(p => p.classList.remove('active'));
-                        panel.classList.add('active');
+                    // دايماً نمنع الانتقال للصفحة على الموبايل، ونخلي الضغطة تنفذ الهوفر وتغير الصورة والـ active بضغطة واحدة فوراً
+                    e.preventDefault();
+                    
+                    panels.forEach(p => p.classList.remove('active'));
+                    panel.classList.add('active');
 
-                        const bgImage = panel.getAttribute('data-bg');
-                        if (accordionBg && bgImage) {
-                            accordionBg.style.backgroundImage = `url('${bgImage}')`;
-                        }
+                    const bgImage = panel.getAttribute('data-bg');
+                    if (accordionBg && bgImage) {
+                        accordionBg.style.backgroundImage = `url('${bgImage}')`;
                     }
-                    // If the panel is already active, the default behavior takes place and navigates to the page on the second tap
                 }
             });
         });

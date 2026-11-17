@@ -23,10 +23,10 @@ const { data } = entry;
 ---
 
 <Layout title={`${data.title} | HERITAGE APEX`}>
-    
+
     <section class="relative w-full min-h-[calc(100vh-90px)] bg-[var(--darker-brown)] pt-12 pb-16 overflow-hidden">
 
-        <div 
+        <div
             class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-5 mix-blend-luminosity pointer-events-none z-0"
             style="background-image: url('/images/background.jpg');"
             aria-hidden="true"
@@ -35,29 +35,45 @@ const { data } = entry;
         <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[var(--darker-brown)] pointer-events-none z-0"></div>
 
         <main class="relative z-10 max-w-[1450px] w-full mx-auto px-[6%] md:px-[8%]">
-            
+
             <section class="mb-8 md:mb-10">
                 <div class="max-w-[900px]">
-                    <span class="text-[11px] md:text-[12px] tracking-[3px] font-semibold text-[var(--accent-orange)] block mb-2">{data.category}</span>
-                    <h1 class="text-[2.2rem] sm:text-[3rem] md:text-[3.5rem] font-extrabold leading-[1.1] mb-3 md:mb-4 text-white">{data.title}</h1>
-                    <p class="text-[0.95rem] sm:text-[1.05rem] text-gray-300 leading-[1.6] line-clamp-2 md:line-clamp-none">{data.description}</p>
+                    <span class="text-[11px] md:text-[12px] tracking-[3px] font-semibold text-[var(--accent-orange)] block mb-2">
+                        {data.category}
+                    </span>
+
+                    <h1 class="text-[2.2rem] sm:text-[3rem] md:text-[3.5rem] font-extrabold leading-[1.1] mb-3 md:mb-4 text-white">
+                        {data.title}
+                    </h1>
+
+                    <p class="text-[0.95rem] sm:text-[1.05rem] text-gray-300 leading-[1.6] line-clamp-2 md:line-clamp-none">
+                        {data.description}
+                    </p>
                 </div>
             </section>
 
             <section>
                 <div class="mb-4 md:mb-6">
-                    <span class="text-[10px] md:text-[12px] tracking-[2px] font-semibold text-[var(--accent-orange)] uppercase block mb-0.5">GALLERY SHOWCASE</span>
-                    <h2 class="text-[1.6rem] sm:text-[2rem] font-bold text-white">Project Views</h2>
+                    <span class="text-[10px] md:text-[12px] tracking-[2px] font-semibold text-[var(--accent-orange)] uppercase block mb-0.5">
+                        GALLERY SHOWCASE
+                    </span>
+
+                    <h2 class="text-[1.6rem] sm:text-[2rem] font-bold text-white">
+                        Project Views
+                    </h2>
                 </div>
 
                 <div
                     id="horizontalSliderWrapper"
-                    class="relative overflow-hidden rounded-[12px] py-2 w-full touch-pan-y"
+                    class="drag-slider-wrapper relative rounded-[12px] py-2 w-full"
                 >
-                    <div id="horizontalSlider" class="flex gap-[20px] md:gap-[30px] w-max cursor-grab">
+                    <div
+                        id="horizontalSlider"
+                        class="drag-slider-track flex gap-[20px] md:gap-[30px] w-max cursor-grab"
+                    >
                         {data.gallery.map((img: string, index: number) => (
                             <div
-                                class="gallery-item w-[85vw] sm:w-[450px] md:w-[500px] h-[220px] sm:h-[260px] md:h-[300px] rounded-[12px] overflow-hidden shadow-xl relative cursor-pointer shrink-0 group border border-white/10 select-none"
+                                class="gallery-item drag-slider-item w-[85vw] sm:w-[450px] md:w-[500px] h-[220px] sm:h-[260px] md:h-[300px] rounded-[12px] overflow-hidden shadow-xl relative cursor-pointer shrink-0 group border border-white/10 select-none"
                                 data-index={index}
                             >
                                 <img
@@ -68,7 +84,9 @@ const { data } = entry;
                                 />
 
                                 <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
-                                    <span class="bg-black/70 text-white px-4 py-1.5 rounded-full text-xs tracking-wider uppercase font-semibold backdrop-blur-sm">Click to Expand</span>
+                                    <span class="bg-black/70 text-white px-4 py-1.5 rounded-full text-xs tracking-wider uppercase font-semibold backdrop-blur-sm">
+                                        Click to Expand
+                                    </span>
                                 </div>
                             </div>
                         ))}
@@ -76,6 +94,7 @@ const { data } = entry;
                 </div>
 
                 <div class="flex justify-end items-center gap-[15px] md:gap-[20px] mt-6 select-none">
+
                     <button
                         id="sliderPrev"
                         type="button"
@@ -99,12 +118,16 @@ const { data } = entry;
                     >
                         NEXT
                     </button>
+
                 </div>
             </section>
         </main>
     </section>
 
-    <div id="lightboxModal" class="fixed inset-0 bg-black/95 z-[9999] hidden items-center justify-center p-4">
+    <div
+        id="lightboxModal"
+        class="fixed inset-0 bg-black/95 z-[9999] hidden items-center justify-center p-4"
+    >
         <button
             id="lightboxClose"
             type="button"
@@ -120,7 +143,7 @@ const { data } = entry;
         >
             &#10094;
         </button>
-        
+
         <div class="text-center max-w-[90vw] max-h-[85vh] flex flex-col items-center">
             <img
                 id="lightboxImg"
@@ -128,7 +151,11 @@ const { data } = entry;
                 alt="Expanded View"
                 class="max-w-full max-h-[70vh] object-contain rounded shadow-2xl"
             />
-            <p id="lightboxCaption" class="text-gray-300 mt-3 text-sm md:text-base"></p>
+
+            <p
+                id="lightboxCaption"
+                class="text-gray-300 mt-3 text-sm md:text-base"
+            ></p>
         </div>
 
         <button
@@ -158,7 +185,9 @@ const { data } = entry;
 
             if (!wrapper || !track || !sliderPrev || !sliderNext || !sliderProgress) return;
 
-            const galleryItems = Array.from(track.querySelectorAll<HTMLElement>('.gallery-item'));
+            const galleryItems = Array.from(
+                track.querySelectorAll<HTMLElement>('.gallery-item')
+            );
 
             const imagesData = galleryItems.map(item => {
                 const img = item.querySelector('img');
@@ -196,7 +225,6 @@ const { data } = entry;
 
             track.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`;
             track.style.willChange = 'transform';
-            wrapper.style.touchAction = 'pan-y';
 
             function getMaxOffset() {
                 return Math.max(0, track.scrollWidth - wrapper.clientWidth);
@@ -263,7 +291,9 @@ const { data } = entry;
             function resetDragState() {
                 isDragging = false;
                 isHorizontalDrag = false;
+
                 wrapper.classList.remove('is-dragging');
+
                 track.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`;
             }
 
@@ -276,7 +306,9 @@ const { data } = entry;
                 if (isHorizontalDrag) {
                     suppressClick = true;
 
-                    if (suppressClickTimer) clearTimeout(suppressClickTimer);
+                    if (suppressClickTimer) {
+                        clearTimeout(suppressClickTimer);
+                    }
 
                     if (
                         distance > MIN_SWIPE_DISTANCE ||
@@ -327,6 +359,8 @@ const { data } = entry;
                 startOffset = currentOffset;
                 velocity = 0;
 
+                wrapper.setPointerCapture(event.pointerId);
+
                 track.style.transition = 'none';
             });
 
@@ -359,10 +393,11 @@ const { data } = entry;
 
                     isHorizontalDrag = true;
                     wrapper.classList.add('is-dragging');
-                    wrapper.setPointerCapture(event.pointerId);
                 }
 
-                if (event.cancelable) event.preventDefault();
+                if (event.cancelable) {
+                    event.preventDefault();
+                }
 
                 const now = performance.now();
                 const timeDelta = Math.max(1, now - lastTime);
@@ -389,15 +424,25 @@ const { data } = entry;
             wrapper.addEventListener('pointercancel', (event: PointerEvent) => {
                 if (event.pointerId !== activePointerId) return;
 
+                const pointerId = activePointerId;
                 activePointerId = null;
+
                 resetDragState();
                 goToIndex(currentIndex);
+
+                if (
+                    pointerId !== null &&
+                    wrapper.hasPointerCapture(pointerId)
+                ) {
+                    wrapper.releasePointerCapture(pointerId);
+                }
             });
 
             wrapper.addEventListener('lostpointercapture', (event: PointerEvent) => {
                 if (event.pointerId !== activePointerId) return;
 
                 activePointerId = null;
+
                 resetDragState();
                 goToIndex(currentIndex);
             });

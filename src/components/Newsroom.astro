@@ -1,3 +1,4 @@
+
 ---
 import { getCollection } from 'astro:content';
 const newsItems = await getCollection('news');
@@ -20,11 +21,21 @@ const newsItems = await getCollection('news');
             </h2>
         </div>
 
-        <div class="overflow-hidden relative pb-[10px] touch-pan-y" id="newsSliderWrapper">
-            <div class="flex gap-[35px] w-max cursor-grab active:cursor-grabbing" id="newsTrack">
+        <div
+            class="drag-slider-wrapper relative pb-[10px]"
+            id="newsSliderWrapper"
+        >
+            <div
+                class="drag-slider-track flex gap-[35px] w-max cursor-grab active:cursor-grabbing"
+                id="newsTrack"
+            >
                 {newsItems.map((item) => (
-                    <div class="news-card w-[350px] md:w-[380px] h-[480px] shrink-0 rounded-[16px] overflow-hidden shadow-xl flex flex-col relative group border border-white/10 select-none">
-                        <img src={item.data.image} alt={item.data.title} class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 pointer-events-none">
+                    <div class="news-card drag-slider-item w-[350px] md:w-[380px] h-[480px] shrink-0 rounded-[16px] overflow-hidden shadow-xl flex flex-col relative group border border-white/10 select-none">
+                        <img
+                            src={item.data.image}
+                            alt={item.data.title}
+                            class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 pointer-events-none"
+                        >
                         
                         <div class="news-content-box absolute bottom-0 left-0 right-0 p-[30px] h-[180px] group-hover:h-[420px] bg-[var(--dark-navy)]/30 group-hover:bg-[var(--dark-navy)]/90 z-10 transition-all duration-700 ease-in-out flex flex-col justify-start overflow-hidden">
                             <span class="text-[11px] tracking-[2px] font-bold block mb-[8px] text-[var(--accent-orange)] shrink-0">
@@ -259,45 +270,3 @@ const newsItems = await getCollection('news');
         refreshSlider();
     }
 </script>
-
-<style>
-    #newsSliderWrapper {
-        touch-action: pan-y;
-        cursor: grab;
-        overflow: hidden;
-    }
-
-    #newsSliderWrapper.is-dragging {
-        cursor: grabbing;
-        user-select: none;
-    }
-
-    #newsTrack {
-        will-change: transform;
-    }
-
-    .news-card img {
-        -webkit-user-drag: none;
-        user-select: none;
-    }
-
-    @media (hover: none) {
-        .news-card.active-card .news-content-box {
-            height: 420px !important;
-            background-color: var(--dark-navy) !important;
-        }
-
-        .news-card.active-card p {
-            display: -webkit-box;
-            -webkit-line-clamp: unset;
-            -webkit-box-orient: vertical;
-            overflow: visible;
-        }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        #newsTrack {
-            transition-duration: 0ms !important;
-        }
-    }
-</style>

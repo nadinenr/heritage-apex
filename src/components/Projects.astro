@@ -40,15 +40,18 @@ const projects = [
         </div>
 
         <div
-            class="overflow-hidden relative pb-[10px] touch-pan-y"
+            class="drag-slider-wrapper relative pb-[10px]"
             id="projectsSliderWrapper"
         >
-            <div class="flex gap-[35px] w-max cursor-grab" id="projectsTrack">
+            <div
+                class="drag-slider-track flex gap-[35px] w-max cursor-grab"
+                id="projectsTrack"
+            >
                 {projects.map((project) => (
                     <a
                         href={project.link}
                         draggable="false"
-                        class="project-slide w-[85vw] sm:w-[380px] md:w-[380px] shrink-0 rounded-[16px] overflow-hidden shadow-xl no-underline group flex flex-col transition-transform duration-300 hover:-translate-y-2 border border-white/10 select-none"
+                        class="project-slide drag-slider-item w-[85vw] sm:w-[380px] md:w-[380px] shrink-0 rounded-[16px] overflow-hidden shadow-xl no-underline group flex flex-col transition-transform duration-300 hover:-translate-y-2 border border-white/10 select-none"
                     >
                         <div class="w-full h-[260px] overflow-hidden pointer-events-none">
                             <img
@@ -204,7 +207,7 @@ const projects = [
             const wasHorizontal = isHorizontalGesture;
             const pointerId = activePointerId;
 
-            const deltaX = startX - (lastPointerX);
+            const deltaX = startX - lastPointerX;
             const dragDuration = Math.max(
                 1,
                 performance.now() - startTime
