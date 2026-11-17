@@ -26,14 +26,14 @@ const newsItems = await getCollection('news');
                     <div class="news-card w-[350px] md:w-[380px] h-[480px] shrink-0 rounded-[16px] overflow-hidden shadow-xl flex flex-col relative group border border-white/10 select-none">
                         <img src={item.data.image} alt={item.data.title} class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 pointer-events-none">
                         
-                        <div class="news-content-box absolute bottom-0 left-0 right-0 p-[30px] h-[180px] bg-[var(--dark-navy)]/30 z-10 transition-all duration-500 ease-in-out flex flex-col justify-start overflow-hidden">
+                        <div class="news-content-box absolute bottom-0 left-0 right-0 p-[30px] h-[180px] group-hover:h-[420px] bg-[var(--dark-navy)]/30 group-hover:bg-[var(--dark-navy)]/90 z-10 transition-all duration-700 ease-in-out flex flex-col justify-start overflow-hidden">
                             <span class="text-[11px] tracking-[2px] font-bold block mb-[8px] text-[var(--accent-orange)] shrink-0">
                                 {item.data.date}
                             </span>
                             <h3 class="text-[1.3rem] font-bold text-white mb-[12px] leading-snug shrink-0">
                                 {item.data.title}
                             </h3>
-                            <p class="text-gray-100 text-[0.9rem] leading-[1.7] whitespace-pre-line line-clamp-2 transition-all duration-500">
+                            <p class="text-gray-100 text-[0.9rem] leading-[1.7] whitespace-pre-line line-clamp-2 group-hover:line-clamp-none transition-all duration-700">
                                 {item.data.details}
                             </p>
                         </div>
@@ -42,7 +42,8 @@ const newsItems = await getCollection('news');
             </div>
         </div>
 
-        <div class="flex justify-end items-center gap-[20px] mt-[50px]">
+        <!-- تم تعديل justify-end إلى justify-center للموبايل و md:justify-end للديسكتوب -->
+        <div class="flex justify-center md:justify-end items-center gap-[20px] mt-[50px]">
             <button type="button" id="newsPrevBtn" class="text-xs font-bold tracking-[2px] text-white hover:text-[var(--accent-orange)] transition-colors cursor-pointer uppercase select-none">PREV.</button>
             <div class="w-[120px] h-[2px] bg-white/10 relative overflow-hidden">
                 <div id="newsProgressBar" class="absolute top-0 left-0 h-full bg-[var(--accent-orange)] transition-all duration-300" style="width: 25%;"></div>
@@ -52,21 +53,7 @@ const newsItems = await getCollection('news');
     </div>
 </section>
 
-<!-- التحكم في الـ Hover للويب والضغطة الواحدة للموبايل بنفس الألوان والشفافية الأصلية -->
 <style>
-    /* الويب: هوفر تلقائي بالماوس */
-    @media (min-width: 769px) {
-        .news-card:hover .news-content-box {
-            height: 420px !important;
-            background-color: rgb(var(--dark-navy-rgb, 15 23 42) / 0.9) !important;
-        }
-        .news-card:hover .news-content-box p {
-            -webkit-line-clamp: unset !important;
-            line-clamp: unset !important;
-        }
-    }
-
-    /* الموبايل: ضغطة واحدة مباشرة تفتح الكارت وتظهر الخلفية بالشفافية المطلوبة */
     @media (max-width: 768px) {
         .news-card.active-card .news-content-box {
             height: 420px !important;
@@ -105,7 +92,7 @@ const newsItems = await getCollection('news');
         let isDragging = false;
         let isHorizontalGesture = false;
         let activePointerId: number | null = null;
-        let suppressClick = false;
+        let hasMoved = false;
         let snapPoints: number[] = [];
 
         function getMaxOffset() {
@@ -175,12 +162,6 @@ const newsItems = await getCollection('news');
                 } else {
                     moveToIndex(currentIndex);
                 }
-
-                suppressClick = true;
-
-                window.setTimeout(() => {
-                    suppressClick = false;
-                }, 150);
             } else {
                 moveToIndex(currentIndex);
             }
@@ -194,6 +175,7 @@ const newsItems = await getCollection('news');
 
             isDragging = true;
             isHorizontalGesture = false;
+            hasMoved = false;
             activePointerId = event.pointerId;
 
             startX = event.clientX;
@@ -210,6 +192,10 @@ const newsItems = await getCollection('news');
 
             const deltaX = event.clientX - startX;
             const deltaY = event.clientY - startY;
+
+            if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+                hasMoved = true;
+            }
 
             if (!isHorizontalGesture) {
                 if (Math.abs(deltaX) < 6 && Math.abs(deltaY) < 6) return;
@@ -246,7 +232,7 @@ const newsItems = await getCollection('news');
         });
 
         wrapper.addEventListener('pointercancel', () => {
-            finishDragging();
+            finishDownloads = finishDragging();
         });
 
         wrapper.addEventListener('lostpointercapture', () => {
@@ -255,13 +241,12 @@ const newsItems = await getCollection('news');
 
         cards.forEach((card) => {
             card.addEventListener('click', (event) => {
-                if (suppressClick) {
+                if (hasMoved) {
                     event.preventDefault();
                     event.stopPropagation();
                     return;
                 }
 
-                // على الموبايل: ضغطة واحدة تفتح الكارت فوراً، وضغطة ثانية تقفله
                 if (window.innerWidth <= 768) {
                     const isOpen = card.classList.contains('active-card');
                     cards.forEach(c => c.classList.remove('active-card'));

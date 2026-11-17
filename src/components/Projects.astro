@@ -1,4 +1,3 @@
-
 ---
 const projects = [
     {
@@ -75,7 +74,8 @@ const projects = [
             </div>
         </div>
 
-        <div class="flex justify-end items-center gap-[20px] mt-[50px]">
+        <!-- تم تعديل justify-end إلى justify-center للموبايل و md:justify-end للديسكتوب -->
+        <div class="flex justify-center md:justify-end items-center gap-[20px] mt-[50px]">
             <button
                 type="button"
                 id="prevBtn"
@@ -117,7 +117,6 @@ const projects = [
 
         const GAP = 35;
         const ANIMATION_DURATION = 380;
-        const DIRECTION_THRESHOLD = 6;
         const MIN_SWIPE_DISTANCE = 25;
         const VELOCITY_THRESHOLD = 0.15;
 
@@ -135,11 +134,6 @@ const projects = [
         let snapPoints: number[] = [];
 
         let clickResetTimer: number | undefined;
-
-        function getCardStep() {
-            if (!slides.length) return 0;
-            return slides[0].offsetWidth + GAP;
-        }
 
         function getMaxOffset() {
             return Math.max(0, track.scrollWidth - wrapper.clientWidth);
