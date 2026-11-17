@@ -168,7 +168,7 @@ const { data } = entry;
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        (() => {
             const wrapper = document.getElementById('horizontalSliderWrapper') as HTMLElement | null;
             const track = document.getElementById('horizontalSlider') as HTMLElement | null;
 
@@ -221,8 +221,20 @@ const { data } = entry;
 
             let lightboxIndex = 0;
 
+            let lightboxPointerId: number | null = null;
+            let lightboxStartX = 0;
+            let lightboxStartY = 0;
+            let lightboxIsHorizontal = false;
+
             track.style.transition = `transform ${ANIMATION_DURATION}ms cubic-bezier(0.22, 0.75, 0.25, 1)`;
             track.style.willChange = 'transform';
+
+            if (modalImg) {
+                modalImg.style.touchAction = 'pan-y';
+                modalImg.style.userSelect = 'none';
+                modalImg.style.webkitUserSelect = 'none';
+                modalImg.draggable = false;
+            }
 
             function getMaxOffset() {
                 return Math.max(0, track.scrollWidth - wrapper.clientWidth);
@@ -483,7 +495,72 @@ const { data } = entry;
                 modal.classList.add('hidden');
 
                 document.body.style.overflow = '';
+
+                lightboxPointerId = null;
+                lightboxIsHorizontal = false;
             }
+
+            modalImg?.addEventListener('pointerdown', (event: PointerEvent) => {
+                if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+                lightboxPointerId = event.pointerId;
+                lightboxStartX = event.clientX;
+                lightboxStartY = event.clientY;
+                lightboxIsHorizontal = false;
+            });
+
+            modalImg?.addEventListener('pointermove', (event: PointerEvent) => {
+                if (event.pointerId !== lightboxPointerId) return;
+
+                const deltaX = event.clientX - lightboxStartX;
+                const deltaY = event.clientY - lightboxStartY;
+
+                if (!lightboxIsHorizontal) {
+                    if (Math.abs(deltaX) < 8 && Math.abs(deltaY) < 8) return;
+
+                    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                        lightboxPointerId = null;
+                        return;
+                    }
+
+                    lightboxIsHorizontal = true;
+                    modalImg?.setPointerCapture(event.pointerId);
+                }
+
+                if (event.cancelable) {
+                    event.preventDefault();
+                }
+            });
+
+            function finishLightboxSwipe(event: PointerEvent) {
+                if (event.pointerId !== lightboxPointerId) return;
+
+                const deltaX = event.clientX - lightboxStartX;
+                const wasHorizontal = lightboxIsHorizontal;
+
+                lightboxPointerId = null;
+                lightboxIsHorizontal = false;
+
+                if (!wasHorizontal || Math.abs(deltaX) < 45) return;
+
+                if (deltaX < 0) {
+                    showLightboxImage(lightboxIndex + 1);
+                } else {
+                    showLightboxImage(lightboxIndex - 1);
+                }
+            }
+
+            modalImg?.addEventListener('pointerup', finishLightboxSwipe);
+
+            modalImg?.addEventListener('pointercancel', () => {
+                lightboxPointerId = null;
+                lightboxIsHorizontal = false;
+            });
+
+            modalImg?.addEventListener('lostpointercapture', () => {
+                lightboxPointerId = null;
+                lightboxIsHorizontal = false;
+            });
 
             galleryItems.forEach((item, index) => {
                 item.addEventListener('click', () => {
@@ -538,6 +615,6 @@ const { data } = entry;
             });
 
             buildSnapPoints();
-        });
+        })();
     </script>
 </Layout>
