@@ -1,51 +1,43 @@
 ---
-/**
- * Component: Services Accordion Section
- */
 ---
 
 <section id="services" class="services-accordion-section">
     <h2 class="services-title">Our Services</h2>
-    <div class="services-accordion" id="servicesAccordion">
-        <!-- Shared Background Image Layer -->
+    <div class="services-accordion touch-pan-y draggable-slider" id="servicesAccordion">
         <div class="accordion-bg" id="accordionBg" style="background-image: url('/images/architecture.jpg');"></div>
         <div class="accordion-overlay"></div>
 
-        <!-- Service Panel 1: Architecture -->
-        <a href="/services/architecture" class="service-panel active" data-bg="/images/architecture.jpg">
-            <div class="panel-content">
-                <h3>Architecture</h3>
-                <p>IAt HERITAGE, we specialize in delivering innovative architectural solutions through a highly skilled and dedicated team of professionals.</p>
-            </div>
-        </a>
+        <div class="draggable-track flex w-full">
+            <a href="/services/architecture" class="service-panel active draggable-item" data-bg="/images/architecture.jpg">
+                <div class="panel-content">
+                    <h3>Architecture</h3>
+                    <p>At HERITAGE, we specialize in delivering innovative architectural solutions through a highly skilled and dedicated team of professionals.</p>
+                </div>
+            </a>
 
-        <!-- Service Panel 2: Interior Design -->
-        <a href="/services/interior-design" class="service-panel" data-bg="/images/interior-design.jpg">
-            <div class="panel-content">
-                <h3>Interior Design</h3>
-                <p>At HERITAGE, we specialize in creating distinctive interior spaces that reflect individuality, elegance, and functionality. </p>
-            </div>
-        </a>
+            <a href="/services/interior-design" class="service-panel draggable-item" data-bg="/images/interior-design.jpg">
+                <div class="panel-content">
+                    <h3>Interior Design</h3>
+                    <p>At HERITAGE, we specialize in creating distinctive interior spaces that reflect individuality, elegance, and functionality.</p>
+                </div>
+            </a>
 
-        <!-- Service Panel 3: Fit Out -->
-        <a href="/services/fit-out" class="service-panel" data-bg="/images/fit-out.jpg">
-            <div class="panel-content">
-                <h3>Fit Out</h3>
-                <p>At HERITAGE, we deliver comprehensive fit-out and contracting solutions, transforming design concepts into exceptional finished spaces.</p>
-            </div>
-        </a>
+            <a href="/services/fit-out" class="service-panel draggable-item" data-bg="/images/fit-out.jpg">
+                <div class="panel-content">
+                    <h3>Fit Out</h3>
+                    <p>At HERITAGE, we deliver comprehensive fit-out and contracting solutions, transforming design concepts into exceptional finished spaces.</p>
+                </div>
+            </a>
 
-        <!-- Service Panel 4: Trading -->
-        <a href="/services/trading" class="service-panel" data-bg="/images/creative-solutions.jpg">
-            <div class="panel-content">
-                <h3>Trading</h3>
-                <p>At HERITAGE, we are preparing to introduce a distinguished range of products and solutions to the Omani market, setting new standards in quality, design, and value.</p>
-            </div>
-        </a>
+            <a href="/services/trading" class="service-panel draggable-item" data-bg="/images/creative-solutions.jpg">
+                <div class="panel-content">
+                    <h3>Trading</h3>
+                    <p>At HERITAGE, we are preparing to introduce a distinguished range of products and solutions to the Omani market, setting new standards in quality, design, and value.</p>
+                </div>
+            </a>
+        </div>
     </div>
 </section>
-
-
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {

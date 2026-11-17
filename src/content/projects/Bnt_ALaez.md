@@ -1,5 +1,5 @@
 ---
-title: "Bnt_ALaez"
+title: "Bint_ALaez"
 category: "COMMERCIAL"
 image: "/images/bnt elezz01.jpg"
 description: "Creating inspiring spaces that elevate brands and enhance experiences."

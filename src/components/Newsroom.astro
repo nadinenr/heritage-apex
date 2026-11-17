@@ -1,24 +1,15 @@
 ---
-/**
- * Component: Newsroom Section
- * Description: Displays dynamic latest news and updates from Astro Content Collections with slider controls
- * and a transparent background image overlay.
- */
 import { getCollection } from 'astro:content';
 const newsItems = await getCollection('news');
 ---
 
 <section class="newsroom-section py-[120px] px-[8%] bg-[var(--dark-navy)] relative overflow-hidden" id="newsroom">
-    
-    <!-- Background Image Layer with Transparency -->
     <div 
         class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-5 mix-blend-luminosity pointer-events-none"
         style="background-image: url('/images/background.jpg');"
     ></div>
 
     <div class="max-w-[1300px] mx-auto relative z-10">
-
-        <!-- Section Header -->
         <div class="newsroom-header-left mb-[60px]">
             <div class="flex items-center gap-[15px] mb-[15px] text-[12px] tracking-[3px] uppercase font-semibold text-[var(--accent-orange)]">
                 <span>NEWSROOM</span>
@@ -29,36 +20,28 @@ const newsItems = await getCollection('news');
             </h2>
         </div>
 
-        <!-- Slider Wrapper -->
-        <div class="overflow-hidden relative pb-[10px]" id="newsSliderWrapper">
-            <div class="flex gap-[35px] transition-transform duration-500 ease-out" id="newsTrack">
-
+        <div class="overflow-hidden relative pb-[10px] touch-pan-y draggable-slider" id="newsSliderWrapper">
+            <div class="flex gap-[35px] transition-transform duration-500 ease-out cursor-grab active:cursor-grabbing draggable-track" id="newsTrack">
                 {newsItems.map((item) => (
-                    <div class="news-card w-[350px] md:w-[380px] h-[480px] shrink-0 rounded-[16px] overflow-hidden shadow-xl flex flex-col relative group cursor-pointer border border-white/10">
-                        <!-- News Card Image -->
-                        <img src={item.data.image} alt={item.data.title} class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="news-card w-[350px] md:w-[380px] h-[480px] shrink-0 rounded-[16px] overflow-hidden shadow-xl flex flex-col relative group border border-white/10 select-none">
+                        <img src={item.data.image} alt={item.data.title} class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 pointer-events-none">
                         
-                        <!-- Content Box: Fixed height initially, expands smoothly on hover -->
-                        <div class="absolute bottom-0 left-0 right-0 p-[30px] h-[180px] group-hover:h-[420px] bg-[var(--dark-navy)]/30 group-hover:bg-[var(--dark-navy)]/90 z-10 transition-all duration-700 ease-in-out flex flex-col justify-start overflow-hidden">
+                        <div class="news-content-box absolute bottom-0 left-0 right-0 p-[30px] h-[180px] group-hover:h-[420px] bg-[var(--dark-navy)]/30 group-hover:bg-[var(--dark-navy)]/90 z-10 transition-all duration-700 ease-in-out flex flex-col justify-start overflow-hidden">
                             <span class="text-[11px] tracking-[2px] font-bold block mb-[8px] text-[var(--accent-orange)] shrink-0">
                                 {item.data.date}
                             </span>
                             <h3 class="text-[1.3rem] font-bold text-white mb-[12px] leading-snug shrink-0">
                                 {item.data.title}
                             </h3>
-                            
-                            <!-- Details: Clamped to 2 lines by default, expands fully on hover -->
                             <p class="text-gray-100 text-[0.9rem] leading-[1.7] whitespace-pre-line line-clamp-2 group-hover:line-clamp-none transition-all duration-700">
                                 {item.data.details}
                             </p>
                         </div>
                     </div>
                 ))}
-
             </div>
         </div>
 
-        <!-- Slider Bottom Bar Controls -->
         <div class="flex justify-end items-center gap-[20px] mt-[50px]">
             <button type="button" id="newsPrevBtn" class="text-xs font-bold tracking-[2px] text-white hover:text-[var(--accent-orange)] transition-colors cursor-pointer uppercase select-none">PREV.</button>
             <div class="w-[120px] h-[2px] bg-white/10 relative overflow-hidden">
@@ -66,15 +49,10 @@ const newsItems = await getCollection('news');
             </div>
             <button type="button" id="newsNextBtn" class="text-xs font-bold tracking-[2px] text-white hover:text-[var(--accent-orange)] transition-colors cursor-pointer uppercase select-none">NEXT</button>
         </div>
-
     </div>
 </section>
 
 <script>
-    /**
-     * Slider Interactive Functionality
-     * Handles navigation buttons, track translation, and progress bar updates.
-     */
     document.addEventListener('DOMContentLoaded', () => {
         const track = document.getElementById('newsTrack') as HTMLElement;
         const prevBtn = document.getElementById('newsPrevBtn') as HTMLButtonElement;
@@ -118,7 +96,28 @@ const newsItems = await getCollection('news');
             }
         });
 
+        cards.forEach((card) => {
+            card.addEventListener('click', () => {
+                card.classList.toggle('active-card');
+            });
+        });
+
         window.addEventListener('resize', updateSlider);
         updateSlider();
     });
 </script>
+
+<style>
+    @media (hover: none) {
+        .news-card.active-card .news-content-box {
+            height: 420px !important;
+            background-color: var(--dark-navy) !important;
+        }
+        .news-card.active-card p {
+            display: -webkit-box;
+            -webkit-line-clamp: unset;
+            -webkit-box-orient: vertical;
+            overflow: visible;
+        }
+    }
+</style>

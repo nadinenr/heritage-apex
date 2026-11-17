@@ -1,5 +1,5 @@
 ---
-title: "Bnt_ALaez"
+title: "Bint_ALaez"
 category: "BOOTHS"
 description: "Turning creative concepts into remarkable spaces that capture attention."
 order: 2

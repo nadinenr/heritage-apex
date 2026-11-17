@@ -1,9 +1,4 @@
 ---
-/**
- * Page: Villas & Residential Portfolio (Villas.astro)
- * Description: Displays a filtered showcase of residential and architectural villa projects 
- * with identical professional spacing and layout configuration.
- */
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 
@@ -19,23 +14,18 @@ const villaProjects = allProjects
 <Layout title="Luxury Villa & Residential Design in Muscat | HERITAGE APEX" 
     description="Explore our exclusive modern and classic villa architectural designs and residential portfolios in Muscat, Oman.">
     
-    <!-- Section styled with balanced top padding matching the commercial page layout -->
     <section class="relative w-full min-h-[calc(100vh-90px)] bg-[var(--darker-brown)] pt-18 pb-8 overflow-hidden">
         
-        <!-- Background Image Layer -->
         <div 
             class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-10 mix-blend-luminosity pointer-events-none z-0"
             style="background-image: url('/images/background.jpg');"
             aria-hidden="true"
         ></div>
 
-        <!-- Bottom Gradient Blend -->
         <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[var(--darker-brown)] pointer-events-none z-0"></div>
 
-        <!-- Main Content Container -->
         <div class="relative z-10 max-w-[1450px] w-full mx-auto px-[4%] md:px-[5%]">
             
-            <!-- Page Title -->
             <div class="mb-[25px]">
                 <div class="flex items-center gap-[15px] mb-[10px] text-[12px] tracking-[3px] uppercase font-semibold text-[var(--accent-orange)]">
                     <span>PORTFOLIO CATEGORY</span>
@@ -44,19 +34,18 @@ const villaProjects = allProjects
                 <h1 class="text-[2.5rem] md:text-[3.5rem] font-extrabold leading-tight text-[var(--text-main)]">Villas & Residential</h1>
             </div>
 
-            <!-- Cards Slider Track -->
-            <div class="relative overflow-hidden w-full">
-                <div id="slider-track" class="flex gap-[35px] transition-transform duration-500 ease-out will-change-transform pt-5">
+            <div class="relative overflow-hidden w-full touch-pan-y draggable-slider">
+                <div id="slider-track" class="flex gap-[35px] transition-transform duration-500 ease-out will-change-transform pt-5 draggable-track cursor-grab active:cursor-grabbing">
                     {villaProjects.map((project) => (
-                        <a href={`/projects/${project.id}`} class="group w-full md:w-[calc(50%-17.5px)] lg:w-[calc(33.333%-23.33px)] bg-[#352f2a]/90 backdrop-blur-sm rounded-[10px] overflow-hidden shadow-lg no-underline flex-shrink-0 transition-transform duration-300 hover:-translate-y-2 border border-white/10">
-                            <div class="w-full h-[220px] sm:h-[240px] overflow-hidden">
+                        <a href={`/projects/${project.id}`} class="group w-full md:w-[calc(50%-17.5px)] lg:w-[calc(33.333%-23.33px)] bg-[#352f2a]/90 backdrop-blur-sm rounded-[10px] overflow-hidden shadow-lg no-underline flex-shrink-0 transition-transform duration-300 hover:-translate-y-2 border border-white/10 select-none">
+                            <div class="w-full h-[220px] sm:h-[240px] overflow-hidden pointer-events-none">
                                 <img 
                                     src={project.data.gallery && project.data.gallery.length > 0 ? project.data.gallery[0] : '/images/about-2.jpg'} 
                                     alt={project.data.title} 
-                                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 pointer-events-none" 
                                 />
                             </div>
-                            <div class="p-[22px]">
+                            <div class="p-[22px] pointer-events-none">
                                 <span class="text-[12px] tracking-[2px] font-bold block mb-[6px] text-[var(--accent-orange)]">{project.data.category}</span>
                                 <h3 class="text-[1.2rem] font-bold text-[var(--text-main)] group-hover:text-[var(--accent-orange)] transition-colors">{project.data.title}</h3>
                             </div>
@@ -65,7 +54,6 @@ const villaProjects = allProjects
                 </div>
             </div>
 
-            <!-- Navigation Controls placed closely right below the cards -->
             <div class="flex items-center justify-end mt-[20px]">
                 <div class="flex items-center gap-[18px]">
                     <button id="prev-btn" type="button" class="text-[11px] tracking-[2.5px] font-bold text-white/50 hover:text-white transition-colors cursor-pointer uppercase select-none">

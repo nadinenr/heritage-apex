@@ -2,7 +2,7 @@
 /**
  * Layout Component: Main Site Template
  * Description: Establishes global HTML structure, fonts, meta tags, and ensures 
- * a unified dark theme background and zero-gap execution across all pages.
+ * a unified dark theme background, smooth vertical scrolling, and global touch/mouse drag support.
  */
 import Navbar from '../components/Navbar.astro';
 import MiniFooter from '../components/MiniFooter.astro';
@@ -25,13 +25,33 @@ const {
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="robots" content="index, follow" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Global Smooth Vertical Scrolling & Mobile Touch Optimization */
+        html {
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-text-size-adjust: 100%;
+        }
+        body {
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        main {
+            flex: 1;
+        }
+    </style>
 </head>
 <!-- Unified background color on body to match --darker-brown theme completely -->
 <body class="bg-[var(--darker-brown)] text-white antialiased m-0 p-0 selection:bg-orange-500 selection:text-white">
@@ -47,5 +67,65 @@ const {
     <!-- Global Mini Footer Component -->
     <MiniFooter />
 
+    <!-- Global Touch & Mouse Drag (Swipe) Script for all Sliders / Carousels -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sliders = document.querySelectorAll('.draggable-slider');
+
+            sliders.forEach((sliderContainer) => {
+                const track = sliderContainer.querySelector('.draggable-track') as HTMLElement;
+                if (!track) return;
+
+                let isDragging = false;
+                let startPos = 0;
+                let currentTranslate = 0;
+                let prevTranslate = 0;
+                let animationID = 0;
+
+                function getPositionX(event: TouchEvent | MouseEvent): number {
+                    return 'touches' in event ? event.touches[0].clientX : event.clientX;
+                }
+
+                function touchStart(event: TouchEvent | MouseEvent) {
+                    isDragging = true;
+                    startPos = getPositionX(event);
+                    prevTranslate = currentTranslate;
+                    track.style.transition = 'none';
+                    animationID = requestAnimationFrame(animation);
+                }
+
+                function touchMove(event: TouchEvent | MouseEvent) {
+                    if (!isDragging) return;
+                    const currentPosition = getPositionX(event);
+                    currentTranslate = prevTranslate + currentPosition - startPos;
+                }
+
+                function touchEnd() {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    cancelAnimationFrame(animationID);
+                    track.style.transition = 'transform 0.5s ease-out';
+                }
+
+                function animation() {
+                    if (isDragging) {
+                        track.style.transform = `translateX(${currentTranslate}px)`;
+                        animationID = requestAnimationFrame(animation);
+                    }
+                }
+
+                track.addEventListener('touchstart', touchStart as EventListener, { passive: true });
+                track.addEventListener('touchmove', touchMove as EventListener, { passive: true });
+                track.addEventListener('touchend', touchEnd);
+
+                track.addEventListener('mousedown', touchStart as EventListener);
+                track.addEventListener('mousemove', touchMove as EventListener);
+                track.addEventListener('mouseup', touchEnd);
+                track.addEventListener('mouseleave', () => {
+                    if (isDragging) touchEnd();
+                });
+            });
+        });
+    </script>
 </body>
 </html>
