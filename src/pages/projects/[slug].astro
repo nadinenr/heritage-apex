@@ -1,0 +1,237 @@
+---
+/**
+ * Page: Dynamic Project Details ([slug].astro)
+ * Description: Displays single project information, metadata, interactive gallery slider, and Lightbox viewer 
+ * with balanced image tones and consistent background layer.
+ */
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import MiniFooter from '../../components/MiniFooter.astro';
+
+export const prerender = true;
+
+/**
+ * Generate static paths for all projects in the collection.
+ */
+export async function getStaticPaths() {
+    const projects = await getCollection('projects');
+    
+    return projects.map(entry => ({
+        params: { slug: entry.id },
+        props: { entry },
+    }));
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+---
+
+<Layout title={`${data.title} | HERITAGE APEX`}>
+    
+    <!-- Main Section Wrapper with Dark Background and Fixed Min-Height -->
+    <section class="relative w-full min-h-[calc(100vh-90px)] bg-[var(--darker-brown)] pt-12 pb-16 overflow-hidden">
+
+        <!-- Background Image Layer matching portfolio pages -->
+        <div 
+            class="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-5 mix-blend-luminosity pointer-events-none z-0"
+            style="background-image: url('/images/background.jpg');"
+            aria-hidden="true"
+        ></div>
+
+        <!-- Bottom Gradient Blend -->
+        <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[var(--darker-brown)] pointer-events-none z-0"></div>
+
+        <!-- Main Content Container -->
+        <main class="relative z-10 max-w-[1450px] w-full mx-auto px-[6%] md:px-[8%]">
+            
+            <!-- Project Header Section -->
+            <section class="mb-8 md:mb-10">
+                <div class="max-w-[900px]">
+                    <span class="text-[11px] md:text-[12px] tracking-[3px] font-semibold text-[var(--accent-orange)] block mb-2">{data.category}</span>
+                    <h1 class="text-[2.2rem] sm:text-[3rem] md:text-[3.5rem] font-extrabold leading-[1.1] mb-3 md:mb-4 text-white">{data.title}</h1>
+                    <p class="text-[0.95rem] sm:text-[1.05rem] text-gray-300 leading-[1.6] line-clamp-2 md:line-clamp-none">{data.description}</p>
+                </div>
+            </section>
+
+            <!-- Horizontal Gallery Showcase Section -->
+            <section>
+                <div class="mb-4 md:mb-6">
+                    <span class="text-[10px] md:text-[12px] tracking-[2px] font-semibold text-[var(--accent-orange)] uppercase block mb-0.5">GALLERY SHOWCASE</span>
+                    <h2 class="text-[1.6rem] sm:text-[2rem] font-bold text-white">Project Views</h2>
+                </div>
+
+                <!-- Slider Track Wrapper -->
+                <div class="overflow-hidden rounded-[12px] py-2">
+                    <div id="horizontalSlider" class="flex gap-[20px] md:gap-[30px] transition-transform duration-700 ease-out">
+                        {data.gallery.map((img: string, index: number) => (
+                            <div class="gallery-item min-w-[85%] sm:min-w-[55%] md:min-w-[42%] lg:min-w-[31.5%] h-[240px] sm:h-[300px] md:h-[340px] rounded-[12px] overflow-hidden shadow-xl relative cursor-pointer flex-shrink-0 group border border-white/10" data-index={index}>
+                                <!-- Added brightness-95 contrast-95 to balance colors and prevent over-saturation -->
+                                <img src={img} alt={`Gallery image ${index + 1}`} class="w-full h-full object-cover brightness-95 contrast-95 transition-transform duration-700 group-hover:scale-105 pointer-events-none" />
+                                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                                    <span class="bg-black/70 text-white px-4 py-1.5 rounded-full text-xs tracking-wider uppercase font-semibold backdrop-blur-sm">Click to Expand</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <!-- Slider Bottom Navigation Controls -->
+                <div class="flex justify-end items-center gap-[15px] md:gap-[20px] mt-6 select-none">
+                    <button id="sliderPrev" class="text-[11px] font-bold tracking-[2.5px] uppercase text-gray-400 hover:text-[var(--accent-orange)] transition-colors cursor-pointer bg-transparent border-none">
+                        PREV.
+                    </button>
+                    <div class="w-[80px] md:w-[100px] h-[2px] bg-white/15 relative overflow-hidden rounded-full">
+                        <div id="sliderProgress" class="h-full bg-[var(--accent-orange)] transition-all duration-700 ease-out" style="width: 35%;"></div>
+                    </div>
+                    <button id="sliderNext" class="text-[11px] font-bold tracking-[2.5px] uppercase text-white hover:text-[var(--accent-orange)] transition-colors cursor-pointer bg-transparent border-none">
+                        NEXT
+                    </button>
+                </div>
+            </section>
+        </main>
+    </section>
+
+    <!-- Lightbox Modal for Image Zoom -->
+    <div id="lightboxModal" class="fixed inset-0 bg-black/95 z-[9999] hidden items-center justify-center p-4">
+        <button id="lightboxClose" class="absolute top-[20px] right-[25px] md:top-[30px] md:right-[40px] text-white text-[2.5rem] bg-none border-none cursor-pointer hover:text-[var(--accent-orange)] z-50">&times;</button>
+        <button id="lightboxPrev" class="absolute left-[15px] md:left-[30px] top-1/2 -translate-y-1/2 bg-white/10 text-white text-[1.5rem] md:text-[1.8rem] px-3.5 py-3 md:px-5 md:py-4 border-none cursor-pointer rounded hover:bg-[var(--accent-orange)] z-50">&#10094;</button>
+        
+        <div class="text-center max-w-[90vw] max-h-[85vh] flex flex-col items-center">
+            <img id="lightboxImg" src="" alt="Expanded View" class="max-w-full max-h-[70vh] object-contain rounded shadow-2xl" />
+            <p id="lightboxCaption" class="text-gray-300 mt-3 text-sm md:text-base"></p>
+        </div>
+
+        <button id="lightboxNext" class="absolute right-[15px] md:right-[30px] top-1/2 -translate-y-1/2 bg-white/10 text-white text-[1.5rem] md:text-[1.8rem] px-3.5 py-3 md:px-5 md:py-4 border-none cursor-pointer rounded hover:bg-[var(--accent-orange)] z-50">&#10095;</button>
+    </div>
+
+
+    <script>
+        /**
+         * Interactive Gallery Slider & Lightbox Script
+         * Handles horizontal scrolling, progress tracking, and full-screen image viewing.
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            const slider = document.getElementById('horizontalSlider');
+            const sliderPrev = document.getElementById('sliderPrev');
+            const sliderNext = document.getElementById('sliderNext');
+            const sliderProgress = document.getElementById('sliderProgress');
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            
+            const modal = document.getElementById('lightboxModal');
+            const modalImg = document.getElementById('lightboxImg') as HTMLImageElement;
+            const modalCaption = document.getElementById('lightboxCaption');
+            const codeCloseBtn = document.getElementById('lightboxClose');
+            const prevBtn = document.getElementById('lightboxPrev');
+            const nextBtn = document.getElementById('lightboxNext');
+
+            const imagesData = Array.from(galleryItems).map(item => {
+                const img = item.querySelector('img');
+                return {
+                    src: img?.getAttribute('src') || '',
+                    alt: img?.getAttribute('alt') || ''
+                };
+            });
+
+            let scrollAmount = 0;
+
+            function updateSliderControls() {
+                if (!slider || !sliderProgress || !sliderPrev || !sliderNext) return;
+                const maxScroll = slider.scrollWidth - slider.clientWidth;
+                if (maxScroll <= 0) {
+                    sliderProgress.style.width = '100%';
+                    return;
+                }
+                const progressRatio = scrollAmount / maxScroll;
+                const barWidth = 35 + (progressRatio * 65);
+                sliderProgress.style.width = `${barWidth}%`;
+
+                if (scrollAmount <= 5) {
+                    sliderPrev.classList.remove('text-white');
+                    sliderPrev.classList.add('text-gray-400');
+                } else {
+                    sliderPrev.classList.remove('text-gray-400');
+                    sliderPrev.classList.add('text-white');
+                }
+
+                if (scrollAmount >= maxScroll - 5) {
+                    sliderNext.classList.remove('text-white');
+                    sliderNext.classList.add('text-gray-400');
+                } else {
+                    sliderNext.classList.remove('text-gray-400');
+                    sliderNext.classList.add('text-white');
+                }
+            }
+
+            sliderNext?.addEventListener('click', () => {
+                if (slider) {
+                    const cardWidth = (slider.querySelector('.gallery-item') as HTMLElement)?.offsetWidth || 400;
+                    const maxScroll = slider.scrollWidth - slider.clientWidth;
+                    scrollAmount = Math.min(scrollAmount + cardWidth + 20, maxScroll);
+                    slider.style.transform = `translateX(-${scrollAmount}px)`;
+                    updateSliderControls();
+                }
+            });
+
+            sliderPrev?.addEventListener('click', () => {
+                if (slider) {
+                    const cardWidth = (slider.querySelector('.gallery-item') as HTMLElement)?.offsetWidth || 400;
+                    scrollAmount = Math.max(scrollAmount - cardWidth - 20, 0);
+                    slider.style.transform = `translateX(-${scrollAmount}px)`;
+                    updateSliderControls();
+                }
+            });
+
+            let currentIndex = 0;
+            function showLightboxImage(index: number) {
+                currentIndex = (index + imagesData.length) % imagesData.length;
+                if (modalImg && modalCaption) {
+                    modalImg.src = imagesData[currentIndex].src;
+                    modalCaption.textContent = imagesData[currentIndex].alt;
+                }
+            }
+
+            galleryItems.forEach((item, index) => {
+                item.addEventListener('click', () => {
+                    showLightboxImage(index);
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                    }
+                });
+            });
+
+            function closeModal() {
+                if (modal) {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                }
+            }
+
+            codeCloseBtn?.addEventListener('click', closeModal);
+            prevBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showLightboxImage(currentIndex - 1);
+            });
+            nextBtn?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showLightboxImage(currentIndex + 1);
+            });
+
+            modal?.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (modal && !modal.classList.contains('hidden')) {
+                    if (e.key === 'Escape') closeModal();
+                    if (e.key === 'ArrowLeft') showLightboxImage(currentIndex - 1);
+                    if (e.key === 'ArrowRight') showLightboxImage(currentIndex + 1);
+                }
+            });
+
+            updateSliderControls();
+        });
+    </script>
+</Layout>

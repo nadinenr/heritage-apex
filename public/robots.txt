@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://heritageapex.com/sitemap-index.xml

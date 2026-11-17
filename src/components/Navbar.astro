@@ -1,0 +1,68 @@
+---
+/**
+ * Component: Navbar Section
+ * Description: Main site navigation bar with brand logo image only and clean markup.
+ */
+---
+
+<header class="nav-container">
+    <div class="logo">
+        <a href="/" class="nav-brand-wrapper">
+            <img src="/images/HERITAGE LOGO.png" alt="HERITAGE APEX Logo" class="nav-logo-image" />
+        </a>
+    </div>
+
+    <!-- Mobile Menu Toggle Button (Hamburger) -->
+    <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle Navigation Menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+
+    <nav id="nav-menu-container" class="nav-menu-container">
+        <ul class="nav-menu">
+            <li><a href="/#about" class="nav-link" data-section="about">About</a></li>
+            <li><a href="/#newsroom" class="nav-link" data-section="newsroom">News</a></li>
+            <li><a href="/#services" class="nav-link" data-section="services">Services</a></li>
+            <li><a href="/#projects" class="nav-link" data-section="projects">Projects</a></li>
+            <li><a href="/#contact" class="nav-link" data-section="contact">Contact</a></li>
+        </ul>
+    </nav>
+</header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const navMenuContainer = document.getElementById('nav-menu-container');
+
+        if (mobileMenuBtn && navMenuContainer) {
+            mobileMenuBtn.addEventListener('click', () => {
+                navMenuContainer.classList.toggle('active');
+            });
+        }
+
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                if (navMenuContainer) {
+                    navMenuContainer.classList.remove('active');
+                }
+
+                const href = link.getAttribute('href');
+                if (window.location.pathname === '/' || window.location.pathname === '') {
+                    if (href && href.startsWith('/#')) {
+                        const targetId = href.replace('/', '');
+                        const targetElement = document.querySelector(targetId);
+                        
+                        if (targetElement) {
+                            e.preventDefault();
+                            targetElement.scrollIntoView({ behavior: 'smooth' });
+                            history.pushState(null, '', targetId);
+                        }
+                    }
+                }
+            });
+        });
+    });
+</script>

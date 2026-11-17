@@ -1,0 +1,51 @@
+---
+/**
+ * Layout Component: Main Site Template
+ * Description: Establishes global HTML structure, fonts, meta tags, and ensures 
+ * a unified dark theme background and zero-gap execution across all pages.
+ */
+import Navbar from '../components/Navbar.astro';
+import MiniFooter from '../components/MiniFooter.astro';
+import '../styles/global.css';
+
+interface Props {
+    title?: string;
+    description?: string;
+    image?: string;
+}
+
+const { 
+    title = "HERITAGE APEX | Architecture & Interiors",
+    description = "Where Experience Meets Creativity in Architecture and Interior Design.",
+    image = "/images/about-2.jpg"
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<!-- Unified background color on body to match --darker-brown theme completely -->
+<body class="bg-[var(--darker-brown)] text-white antialiased m-0 p-0 selection:bg-orange-500 selection:text-white">
+
+    <!-- Global Navigation Bar Component -->
+    <Navbar />
+
+    <!-- Main Content Area (Unified background and seamless padding below navbar) -->
+    <main class="m-0 pt-[90px] px-0 pb-0 bg-[var(--darker-brown)]">
+        <slot />
+    </main>
+
+    <!-- Global Mini Footer Component -->
+    <MiniFooter />
+
+</body>
+</html>

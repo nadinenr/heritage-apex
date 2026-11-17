@@ -1,0 +1,66 @@
+---
+/**
+ * Component: Footer Section
+ * Description: Displays corporate contact info and quick navigation with ample bottom padding.
+ */
+---
+
+<footer id="contact" class="site-footer bg-[var(--darker-brown)] text-[var(--text-muted)] pt-[90px] px-[8%] pb-24 md:pb-28 m-0 relative border-t border-white/10 w-full overflow-hidden">
+    <div class="footer-container max-w-[1300px] mx-auto pb-0 mb-0">
+        <!-- Top Section: Heading and Main Contact Call-to-Action -->
+        <div class="footer-top flex justify-between items-center pb-[60px] border-b border-white/10 mb-[60px]">
+            <div class="footer-heading">
+                <div class="section-label flex items-center gap-[15px] mb-[15px] text-[12px] tracking-[3px] uppercase font-semibold text-[var(--accent-orange)]">
+                    <span>GET IN TOUCH</span>
+                    <i class="label-line w-[50px] h-[1px] bg-[var(--accent-orange)]"></i>
+                </div>
+                <h2 class="text-[2.5rem] font-extrabold text-white">Let's Build Together</h2>
+            </div>
+            <a href="mailto:info@heritageapex.com" class="explore-btn flex items-center gap-2 text-white hover:text-[var(--accent-orange)] transition-colors">
+                <span>Contact Our Team</span>
+                <span class="text-[var(--accent-orange)] text-lg">↗</span>
+            </a>
+        </div>
+
+        <!-- Links and Information Grid -->
+        <div class="footer-grid grid grid-cols-1 md:grid-cols-[2fr_1fr_1.5fr] gap-[50px] pb-10 mb-0">
+            <div class="footer-col">
+                <h3 class="footer-logo text-[var(--text-main)] text-[1.4rem] font-extrabold tracking-[2px] mb-[15px]">HERITAGE APEX</h3>
+                <p class="footer-desc text-[0.9rem] leading-[1.7] max-w-[350px]">
+                    Delivering world-class architecture, interior design, and engineering solutions across Muscat and Oman.
+                </p>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="text-[var(--text-main)] text-[1rem] font-bold mb-[20px] tracking-[1px]">Quick Links</h4>
+                <ul class="footer-links list-none p-0 m-0">
+                    <li class="mb-[10px]"><a href="#main" class="text-[var(--text-muted)] hover:text-[var(--accent-orange)] text-[0.9rem] transition-colors">Home</a></li>
+                    <li class="mb-[10px]"><a href="#about" class="text-[var(--text-muted)] hover:text-[var(--accent-orange)] text-[0.9rem] transition-colors">About Us</a></li>
+                    <li class="mb-[10px]"><a href="#newsroom" class="text-[var(--text-muted)] hover:text-[var(--accent-orange)] text-[0.9rem] transition-colors">News</a></li>
+                    <li class="mb-[10px]"><a href="#services" class="text-[var(--text-muted)] hover:text-[var(--accent-orange)] text-[0.9rem] transition-colors">Services</a></li>
+                    <li class="mb-[10px]"><a href="#projects" class="text-[var(--text-muted)] hover:text-[var(--accent-orange)] text-[0.9rem] transition-colors">Our Work</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="text-[var(--text-main)] text-[1rem] font-bold mb-[20px] tracking-[1px]">Headquarters</h4>
+                <p class="text-[0.9rem] mb-[8px]">Al Ghubrah North, Sultan Qaboos Street</p>
+                <p class="text-[0.9rem] mb-[8px]">Next to Muscat University, Muscat, Oman</p>
+                
+                <p class="contact-detail text-[var(--text-gray)] mt-[12px]">
+                    <strong>Phone:</strong> 
+                    <a href="https://api.whatsapp.com/send?phone=71519695&text=Hello%20HERITAGE%20APEX" target="_blank" rel="noopener noreferrer" class="text-inherit no-underline hover:text-[var(--accent-orange)]">
+                        +968 7151 9695
+                    </a>
+                </p>
+
+                <p class="contact-detail text-[var(--text-gray)] mt-[12px]">
+                    <strong>Email:</strong> 
+                    <a href="mailto:info@heritageapex.net" class="text-inherit no-underline hover:text-[var(--accent-orange)]">
+                        info@heritageapex.net
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>

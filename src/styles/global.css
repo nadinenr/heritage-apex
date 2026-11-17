@@ -1,0 +1,902 @@
+@import "tailwindcss";
+
+/* ==========================================
+   1. Root Variables & Theme Configuration
+   ========================================== */
+:root {
+  --bg-main: #0b0f14;
+  --dark-navy: #2c1411;
+  --darker-brown: #2a2521;
+  --light-brown: #1e1d1d;
+  --dark-panel: #7693bf;
+  --accent-orange: #ffc06d;
+  --text-main: #ffffff;
+  --text-muted: #94a3b8;
+  --text-gray: #d1d5db;
+  --bg-light: #ffffff;
+  --bg-beige: #fff5e7;
+}
+
+@layer base {
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 100% !important;
+    background-color: var(--darker-brown) !important;
+    font-family: 'Montserrat', Arial, Helvetica, sans-serif;
+    color: var(--text-main);
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+
+  /* ==========================================
+     2. Navigation Styles
+     ========================================== */
+  .nav-container {
+    height: 90px !important;
+    padding: 0 6% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 100 !important;
+    background-color: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(10px) !important;
+    border-bottom: none !important;
+  }
+
+  .nav-brand-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-decoration: none !important;
+  }
+
+  .nav-logo-image {
+    height: 86px !important;
+    width: auto !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-link {
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.85;
+    transition: opacity 0.3s ease;
+  }
+
+  .nav-link:hover {
+    opacity: 0.55;
+    color: var(--accent-orange);
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 28px;
+    height: 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1001;
+  }
+
+  .mobile-menu-btn .bar {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: var(--text-main);
+    transition: all 0.3s ease;
+  }
+
+  /* ==========================================
+     3. Hero / Main Section Styles
+     ========================================== */
+  .main-section {
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: var(--dark-navy);
+    margin-top: -90px;
+  }
+
+  .main-image {
+    position: absolute;
+    inset: 0;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    transform: scale(1.03);
+    background-image: url("/images/hero.jpg");
+  }
+
+  .main-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.32);
+  }
+
+  .main-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    padding: 0 7%;
+    text-align: left;
+  }
+
+  .main-label {
+    font-size: 13px;
+    letter-spacing: 4px;
+    margin-bottom: 25px;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .main-title {
+    font-size: clamp(55px, 9vw, 140px);
+    line-height: 0.9;
+    letter-spacing: 3px;
+    font-weight: 500;
+    color: var(--text-main);
+    display: block;
+  }
+
+  .main-subtitle {
+    margin-top: 30px;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* ==========================================
+     4. About Section Styles
+     ========================================== */
+  .about-section {
+    position: relative;
+    padding: 100px 8%;
+    background-color: var(--bg-beige);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    overflow: hidden;
+  }
+
+  .about-content {
+    flex: 1;
+    max-width: 450px;
+  }
+
+  .about-section .section-label {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--accent-orange);
+  }
+
+  .about-section .label-line {
+    width: 50px;
+    height: 1px;
+    background-color: var(--accent-orange);
+  }
+
+  .about-section h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: var(--dark-navy);
+  }
+
+  .about-content p {
+    font-size: 0.95rem;
+    color: #555555;
+    line-height: 1.8;
+    margin-bottom: 0;
+  }
+
+  .about-images {
+    flex: 1;
+    display: flex;
+    position: relative;
+    height: 500px;
+    align-items: center;
+  }
+
+  .about-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .about-image-main {
+    position: absolute;
+    width: 280px;
+    height: 420px;
+    left: 40px;
+    top: 0;
+    z-index: 1;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  .about-image-secondary {
+    position: absolute;
+    width: 260px;
+    height: 380px;
+    right: 20px;
+    bottom: 0;
+    z-index: 2;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  /* ==========================================
+     5. Newsroom Section Styles
+     ========================================== */
+  .newsroom-section {
+    position: relative;
+    padding: 90px 8%;
+    overflow: hidden;
+    background-color: var(--bg-light);
+  }
+
+  .newsroom-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .newsroom-header-left h2 {
+    font-size: 3.2rem;
+    font-weight: 800;
+    margin-top: 10px;
+    color: var(--dark-navy);
+  }
+
+  .newsroom-slider-wrapper {
+    overflow: hidden;
+    width: 100%;
+    padding: 20px 0;
+  }
+
+  .newsroom-track {
+    display: flex;
+    gap: 35px;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .newsroom-track .news-card {
+    min-width: 360px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    color: var(--text-main);
+    background-color: var(--dark-navy);
+  }
+
+  .card-image-box {
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+  }
+
+  .card-image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .card-image-box img:hover {
+    transform: scale(1.05);
+  }
+
+  .card-content-box {
+    padding: 25px;
+  }
+
+  .card-content-box span {
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 10px;
+    color: var(--accent-orange);
+  }
+
+  .card-content-box h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--text-main);
+  }
+
+  .card-content-box p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  /* ==========================================
+  
+     6. Services Accordion Section Styles
+          ========================================== */
+  .services-accordion-section {
+    padding: 90px 8%;
+    background-color: var(--bg-beige, #fff5e7);
+    overflow: hidden;
+  }
+
+  .services-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 40px;
+    color: var(--dark-navy, #2c1411);
+  }
+
+  .services-accordion {
+    position: relative;
+    display: flex;
+    height: 500px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+
+  .accordion-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    transition: background-image 0.9s ease-in-out;
+  }
+
+  .accordion-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .service-panel {
+    position: relative !important;
+    flex: 1;
+    height: 100%;
+    z-index: 3;
+    cursor: pointer;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
+    transition: flex 0.9s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.4s ease;
+  }
+
+  .service-panel:last-child {
+    border-right: none;
+  }
+
+  .panel-content {
+    position: absolute !important;
+    bottom: 35px !important;
+    left: 25px !important;
+    right: 25px !important;
+    z-index: 4;
+  }
+
+  .panel-content h3 {
+    color: var(--text-main, #ffffff);
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    transition: color 0.3s ease;
+    margin: 0;
+  }
+
+  .panel-content p {
+    color: var(--text-gray, #d1d5db);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-top: 10px;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.5s ease, max-height 0.5s ease;
+  }
+
+
+  .service-panel.active {
+    flex: 2.5;
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .service-panel.active .panel-content p {
+    opacity: 1;
+    max-height: 120px;
+  }
+
+  .service-panel.active .panel-content h3 {
+    color: var(--accent-orange, #ffc06d);
+  }
+
+
+  @media (max-width: 768px) {
+    .services-accordion {
+      flex-direction: column;
+      height: 600px;
+    }
+
+    .service-panel {
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  /* ==========================================
+
+     7. Projects Slider Section Styles
+     ========================================== */
+  .projects-slider-section {
+    position: relative;
+    padding: 90px 8%;
+    color: var(--text-main);
+    overflow: hidden;
+    min-height: 600px;
+    background-color: var(--dark-panel);
+  }
+
+  .projects-bg-cover {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    background-image: url('/images/project-1.jpg');
+    filter: blur(12px) brightness(0.25);
+    transform: scale(1.1);
+  }
+
+  .projects-bg-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: rgba(13, 17, 23, 0.7);
+  }
+
+  .projects-container {
+    position: relative;
+    z-index: 3;
+  }
+
+  .projects-slider-section .section-label {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--accent-orange);
+  }
+
+  .projects-slider-section .label-line {
+    width: 50px;
+    height: 1px;
+    background-color: var(--accent-orange);
+  }
+
+  .projects-header-left h2 {
+    font-size: 3.2rem;
+    font-weight: 800;
+    margin-top: 10px;
+    color: var(--text-main);
+  }
+
+  .slider-wrapper {
+    overflow: hidden;
+    width: 100%;
+    padding: 30px 0;
+  }
+
+  .projects-track {
+    display: flex;
+    gap: 35px;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .project-slide {
+    position: relative;
+    flex-shrink: 0;
+    display: block;
+    text-decoration: none;
+    margin-right: 35px;
+    width: calc(33.333% - 24px);
+    min-width: 340px;
+  }
+
+  .img-box {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+
+  .img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.7);
+    transition: transform 0.5s ease, filter 0.5s ease;
+  }
+
+  .project-slide:hover .img-box img {
+    transform: scale(1.05);
+    filter: brightness(0.9);
+  }
+
+  .slide-content {
+    padding-top: 20px;
+  }
+
+  .slide-content span {
+    font-size: 12px;
+    letter-spacing: 2px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+    color: var(--accent-orange);
+  }
+
+  .slide-content h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    line-height: 1.4;
+    transition: color 0.3s ease;
+    color: var(--text-main);
+  }
+
+  .project-slide:hover .slide-content h3 {
+    color: var(--accent-orange);
+  }
+
+  /* ==========================================
+     8. Shared Slider Controls & Progress Bars
+     ========================================== */
+  .slider-bottom-bar-only-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 40px;
+    width: 100%;
+  }
+
+  .slider-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .control-btn {
+    background: transparent;
+    border: none;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    color: var(--dark-navy);
+  }
+
+  .projects-slider-section .control-btn {
+    color: var(--text-main);
+  }
+
+  .control-btn:hover {
+    color: var(--accent-orange);
+  }
+
+  .progress-bar-container {
+    width: 160px;
+    height: 2px;
+    position: relative;
+    overflow: hidden;
+    margin: 2px 0;
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+
+  .projects-slider-section .progress-bar-container,
+  .newsroom-section .progress-bar-container {
+    background-color: rgba(255, 255, 255, 0.25);
+  }
+
+  .progress-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 30%;
+    background-color: var(--accent-orange);
+    transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  /* ==========================================
+     9. Footer Styles
+     ========================================== */
+  .site-footer {
+    background-color: var(--darker-brown) !important;
+    color: var(--text-muted);
+    padding: 90px 8% 0px !important;
+    margin-bottom: 0px !important;
+    position: relative;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .footer-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding-bottom: 0px !important;
+  }
+
+  .footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 60px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 60px;
+  }
+
+  .footer-heading .section-label {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--accent-orange);
+  }
+
+  .footer-heading .label-line {
+    width: 50px;
+    height: 1px;
+    background-color: var(--accent-orange);
+  }
+
+  .footer-heading h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr;
+    gap: 50px;
+    padding-bottom: 60px;
+  }
+
+  .footer-logo {
+    color: var(--text-main);
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+  }
+
+  .footer-desc {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    max-width: 350px;
+  }
+
+  .footer-col h4 {
+    color: var(--text-main);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .footer-links li {
+    margin-bottom: 10px;
+  }
+
+  .footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+  }
+
+  .footer-links a:hover {
+    color: var(--accent-orange);
+  }
+
+  .footer-col p {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+
+  .contact-detail {
+    margin-top: 12px;
+    color: var(--text-gray);
+  }
+
+  /* ==========================================
+     10. Service Content Markdown Styles
+     ========================================== */
+  .service-content p {
+    margin-bottom: 1.5rem;
+    color: var(--text-gray);
+  }
+
+  .service-content h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .service-content ul {
+    list-style: none;
+    padding-left: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0.75rem 2rem;
+    margin-top: 1rem;
+  }
+
+  .service-content li {
+    position: relative;
+    padding-left: 1.5rem;
+    color: var(--text-gray);
+  }
+
+  .service-content li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.65em;
+    width: 8px;
+    height: 2px;
+    background-color: var(--accent-orange);
+  }
+}
+
+/* ==========================================
+   11. Mobile Responsive Media Query
+   ========================================== */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+
+  .nav-menu-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.7) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+  }
+
+  .nav-menu-container.active {
+    max-height: 300px;
+  }
+
+  .nav-menu {
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 0;
+    gap: 1.25rem;
+  }
+
+  .about-section {
+    flex-direction: column !important;
+    padding: 3rem 5% !important;
+    gap: 2rem !important;
+  }
+
+  .about-content {
+    max-width: 100% !important;
+  }
+
+  .about-images {
+    width: 100% !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 1rem !important;
+    position: static !important;
+    justify-content: space-between;
+  }
+
+  .about-image-main,
+  .about-image-secondary {
+    position: static !important;
+    width: 48% !important;
+    height: 340px !important;
+    box-shadow: none !important;
+  }
+
+  .footer-top {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 35px !important;
+    margin-bottom: 40px !important;
+    padding-bottom: 40px !important;
+  }
+
+  .footer-heading h2 {
+    font-size: 2rem !important;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 35px !important;
+  }
+
+  .footer-desc {
+    max-width: 100% !important;
+  }
+
+  .footer-bottom {
+    flex-direction: column !important;
+    gap: 15px !important;
+    text-align: center !important;
+  }
+
+  .footer-legal a {
+    margin: 0 10px !important;
+  }
+}
